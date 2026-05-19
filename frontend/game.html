@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Grammerde — Partie en cours</title>
+  <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+
+<nav class="nav">
+  <a href="/" class="logo">Gramme<span>rde</span></a>
+  <div class="nav-actions">
+    <a href="/profile.html" class="btn btn-ghost hidden" id="user-menu">
+      <span id="nav-username"></span>
+    </a>
+    <button class="btn btn-ghost" id="btn-login">Connexion</button>
+    <button class="btn btn-ghost hidden" id="btn-logout">Déconnexion</button>
+  </div>
+</nav>
+
+<!-- Game View -->
+<div id="game-view">
+  <div class="game-layout">
+    <main class="game-main">
+      <div class="game-header">
+        <h1 class="game-title">Trouve les fautes</h1>
+        <button class="btn btn-primary" id="btn-submit">Terminer et voir le score</button>
+      </div>
+
+      <div class="progress-label" id="progress-label">0 / 0 fautes corrigées</div>
+      <div class="progress-bar-wrap">
+        <div class="progress-bar-fill" id="progress-fill" style="width:0%"></div>
+      </div>
+
+      <div class="text-display" id="text-display">
+        <div style="text-align:center;color:var(--text-muted);padding:40px">Chargement du texte…</div>
+      </div>
+    </main>
+
+    <aside class="game-sidebar">
+      <!-- Timer (VS mode only) -->
+      <div class="timer hidden" id="timer-block">
+        <div class="timer-value" id="timer-value">2:00</div>
+        <div class="timer-label">Temps restant</div>
+      </div>
+
+      <div class="sidebar-card">
+        <div class="stat-row">
+          <span class="stat-label">Corrections</span>
+          <span class="stat-value green" id="stat-corrections">0</span>
+        </div>
+        <div class="stat-row" style="margin-bottom:0">
+          <span class="stat-label">Total fautes</span>
+          <span class="stat-value red" id="stat-total">—</span>
+        </div>
+      </div>
+
+      <div class="sidebar-card" style="font-size:12px;color:var(--text-dim);line-height:1.6">
+        <strong style="color:var(--text)">Comment jouer</strong><br><br>
+        Cliquez sur n'importe quel mot pour proposer une correction.<br><br>
+        Les fautes peuvent être : conjugaison, orthographe, accords, homophones, ponctuation ou syntaxe.
+      </div>
+    </aside>
+  </div>
+</div>
+
+<!-- Results View -->
+<div id="results-view" class="hidden">
+  <div class="results">
+    <div class="score-display">
+      <div class="score-big" id="score-value">—</div>
+      <div class="score-label" id="score-summary"></div>
+    </div>
+
+    <div style="display:flex;gap:12px;justify-content:center;margin-bottom:40px">
+      <button class="btn btn-primary btn-lg" id="btn-replay">Rejouer</button>
+      <a href="/profile.html" class="btn btn-outline btn-lg">Voir mon profil</a>
+    </div>
+
+    <h2 style="font-family:var(--font-display);font-size:1.3rem;margin-bottom:16px">Détail des corrections</h2>
+    <table class="results-table">
+      <thead>
+        <tr>
+          <th>Mot fautif</th>
+          <th>Correction</th>
+          <th>Votre réponse</th>
+          <th>Résultat</th>
+          <th>Explication</th>
+        </tr>
+      </thead>
+      <tbody id="results-tbody"></tbody>
+    </table>
+  </div>
+</div>
+
+<!-- Correction Popup -->
+<div id="popup-overlay" class="popup-overlay hidden">
+  <div class="popup">
+    <div class="popup-label">Proposez la correction pour :</div>
+    <div class="popup-word" id="popup-word"></div>
+    <input
+      type="text"
+      class="popup-input"
+      id="popup-input"
+      placeholder="Votre correction…"
+      autocomplete="off"
+      spellcheck="false"
+    >
+    <div class="popup-actions">
+      <button class="btn btn-ghost" id="btn-popup-skip">Passer</button>
+      <button class="btn btn-green" id="btn-popup-validate">Valider</button>
+    </div>
+  </div>
+</div>
+
+<script type="module" src="/js/game.js"></script>
+</body>
+</html>

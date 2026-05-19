@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Grammerde — Mon profil</title>
+  <link rel="stylesheet" href="/css/style.css">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4"></script>
+</head>
+<body>
+
+<nav class="nav">
+  <a href="/" class="logo">Gramme<span>rde</span></a>
+  <div class="nav-actions">
+    <a href="/" class="btn btn-ghost">← Accueil</a>
+    <span class="btn btn-ghost hidden" id="user-menu" style="cursor:default">
+      <span id="nav-username"></span>
+    </span>
+    <button class="btn btn-ghost" id="btn-logout">Déconnexion</button>
+  </div>
+</nav>
+
+<div class="profile-layout">
+
+  <!-- Header -->
+  <div class="profile-header">
+    <img class="profile-avatar" id="profile-avatar" src="" alt="avatar">
+    <div>
+      <div class="profile-name" id="profile-name">—</div>
+      <div class="profile-since" id="profile-since"></div>
+    </div>
+    <div style="margin-left:auto">
+      <a href="/" class="btn btn-primary">Nouvelle partie</a>
+    </div>
+  </div>
+
+  <!-- Stats -->
+  <div class="stats-grid">
+    <div class="stat-card">
+      <div class="stat-card-value" id="stat-games">—</div>
+      <div class="stat-card-label">Parties jouées</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-card-value" id="stat-avg" style="color:var(--green)">—</div>
+      <div class="stat-card-label">Score moyen</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-card-value" id="stat-streak" style="color:#FFA500">—</div>
+      <div class="stat-card-label">Streak</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-card-value" id="stat-best-diff" style="font-size:1.5rem">—</div>
+      <div class="stat-card-label">Meilleure difficulté</div>
+    </div>
+  </div>
+
+  <!-- Chart -->
+  <div class="chart-wrap">
+    <canvas id="score-chart"></canvas>
+  </div>
+
+  <!-- History -->
+  <h2 style="font-family:var(--font-display);font-size:1.3rem;margin-bottom:16px">Historique</h2>
+  <table class="history-table">
+    <thead>
+      <tr>
+        <th>Date</th>
+        <th>Difficulté</th>
+        <th>Score</th>
+        <th>Corrections</th>
+        <th>Durée</th>
+      </tr>
+    </thead>
+    <tbody id="history-tbody">
+      <tr><td colspan="5" style="text-align:center;color:var(--text-muted);padding:32px">Chargement…</td></tr>
+    </tbody>
+  </table>
+
+</div>
+
+<footer>
+  <span>Grammerde © 2024 — Corriger, c'est gagner.</span>
+</footer>
+
+<script type="module" src="/js/profile.js"></script>
+</body>
+</html>

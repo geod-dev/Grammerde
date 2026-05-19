@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Grammerde — Mode VS</title>
+  <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+
+<nav class="nav">
+  <a href="/" class="logo">Gramme<span>rde</span></a>
+  <div class="nav-actions">
+    <a href="/profile.html" class="btn btn-ghost hidden" id="user-menu">
+      <span id="nav-username"></span>
+    </a>
+    <a href="/" class="btn btn-ghost">← Retour</a>
+    <button class="btn btn-ghost hidden" id="btn-logout">Déconnexion</button>
+  </div>
+</nav>
+
+<!-- Setup View -->
+<div id="view-setup">
+  <div class="vs-setup">
+    <h1 class="vs-title">Mode <span class="vs-sep">VS</span></h1>
+    <p style="color:var(--text-dim);margin-bottom:8px">
+      Affrontez un ami en temps réel. 120 secondes pour corriger un maximum de fautes.
+    </p>
+
+    <div class="vs-options">
+      <!-- Create room -->
+      <div class="card" style="text-align:left">
+        <div class="card-title">Créer une room</div>
+        <div class="form-group" style="margin-bottom:16px">
+          <label class="form-label">Difficulté</label>
+          <select id="create-difficulty" class="form-input" style="cursor:pointer">
+            <option value="facile">Facile</option>
+            <option value="moyen" selected>Moyen</option>
+            <option value="difficile">Difficile</option>
+          </select>
+        </div>
+        <button class="btn btn-primary" style="width:100%" id="btn-create-room">Créer la room</button>
+      </div>
+
+      <!-- Join room -->
+      <div class="card" style="text-align:left">
+        <div class="card-title">Rejoindre une room</div>
+        <div class="form-group" style="margin-bottom:16px">
+          <label class="form-label">Code de la room</label>
+          <input
+            id="join-code"
+            type="text"
+            class="form-input"
+            placeholder="ABC123"
+            maxlength="6"
+            style="text-transform:uppercase;letter-spacing:0.1em;font-size:18px;text-align:center"
+          >
+        </div>
+        <button class="btn btn-outline" style="width:100%" id="btn-join-room">Rejoindre</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Waiting View -->
+<div id="view-waiting" class="hidden">
+  <div class="vs-setup">
+    <h1 class="vs-title">En attente…</h1>
+    <p style="color:var(--text-dim);margin-bottom:24px" id="waiting-status">Connexion…</p>
+
+    <div class="card">
+      <div class="config-label">Code à partager</div>
+      <div class="room-code-display" id="display-code">——</div>
+      <p style="font-size:13px;color:var(--text-dim)">Partagez ce code à votre adversaire</p>
+    </div>
+  </div>
+</div>
+
+<!-- Game View -->
+<div id="view-game" class="hidden">
+  <div class="vs-game">
+
+    <!-- Scores header -->
+    <div class="vs-scores">
+      <div class="vs-player me">
+        <div>
+          <div class="vs-player-name" id="my-username">Vous</div>
+          <div class="vs-player-score" id="my-score">0</div>
+        </div>
+      </div>
+
+      <div class="vs-center">
+        <div class="timer-value" id="vs-timer">120</div>
+        <div class="timer-label">secondes</div>
+      </div>
+
+      <div class="vs-player opponent" style="justify-content:flex-end">
+        <div style="text-align:right">
+          <div class="vs-player-name" id="opponent-username">Adversaire</div>
+          <div class="vs-player-score" id="opponent-score">0</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Text -->
+    <div class="text-display" id="vs-text" style="overflow-y:auto">
+      Chargement…
+    </div>
+
+    <div style="text-align:center;font-size:12px;color:var(--text-dim)">
+      Cliquez sur les mots pour les corriger — le plus rapide gagne !
+    </div>
+  </div>
+</div>
+
+<!-- Finish Screen -->
+<div id="finish-screen" class="vs-finish-screen hidden">
+  <div class="winner-label">Résultat</div>
+  <div class="winner-name" id="finish-title">—</div>
+  <div style="color:var(--text-dim);font-size:16px" id="finish-scores"></div>
+  <button class="btn btn-primary btn-lg" id="btn-play-again">Rejouer</button>
+</div>
+
+<!-- VS Correction Popup -->
+<div id="vs-popup" class="popup-overlay hidden">
+  <div class="popup">
+    <div class="popup-label">Correction pour :</div>
+    <div class="popup-word" id="vs-popup-word"></div>
+    <input
+      type="text"
+      class="popup-input"
+      id="vs-popup-input"
+      placeholder="Votre correction…"
+      autocomplete="off"
+      spellcheck="false"
+    >
+    <div class="popup-actions">
+      <button class="btn btn-ghost" id="btn-vs-skip">Passer</button>
+      <button class="btn btn-green" id="btn-vs-validate">Valider</button>
+    </div>
+  </div>
+</div>
+
+<script type="module" src="/js/vs.js"></script>
+</body>
+</html>

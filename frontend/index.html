@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Grammerde — Corrige tes fautes</title>
+  <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+
+<!-- Nav -->
+<nav class="nav">
+  <a href="/" class="logo">Gramme<span>rde</span></a>
+  <div class="nav-actions">
+    <a href="/profile.html" class="btn btn-ghost hidden" id="user-menu">
+      <span id="nav-username"></span>
+    </a>
+    <button class="btn btn-ghost" id="btn-login">Connexion</button>
+    <button class="btn btn-outline" id="btn-register">Inscription</button>
+    <button class="btn btn-ghost hidden" id="btn-logout">Déconnexion</button>
+  </div>
+</nav>
+
+<!-- Hero -->
+<section class="hero">
+  <span class="hero-eyebrow">Jeu de correction de texte</span>
+  <h1>
+    Trouve les<br>
+    <span class="strike">fautes</span> <span class="correct">cachées</span>
+  </h1>
+  <p class="hero-sub">
+    Des articles réels, des fautes injectées par IA. Trouve-les toutes et grimpe dans le classement.
+  </p>
+  <div class="hero-cta">
+    <button class="btn btn-primary btn-lg" onclick="document.querySelector('.configurator').scrollIntoView({behavior:'smooth'})">
+      Jouer maintenant
+    </button>
+    <a href="/vs.html" class="btn btn-outline btn-lg">Mode VS ⚔</a>
+  </div>
+</section>
+
+<!-- Configurator -->
+<section class="configurator">
+  <div class="card">
+    <div class="card-title">Configurer une partie</div>
+
+    <div class="config-section">
+      <div class="config-label">Difficulté</div>
+      <div class="difficulty-group">
+        <button class="diff-btn" data-diff="facile">
+          <span class="diff-name">Facile</span>
+          <span class="diff-desc">Homophones, accords simples</span>
+        </button>
+        <button class="diff-btn active" data-diff="moyen">
+          <span class="diff-name">Moyen</span>
+          <span class="diff-desc">Conjugaisons, pluriels</span>
+        </button>
+        <button class="diff-btn" data-diff="difficile">
+          <span class="diff-name">Difficile</span>
+          <span class="diff-desc">Subjonctif, participes rares</span>
+        </button>
+      </div>
+    </div>
+
+    <div class="config-section">
+      <div class="config-label">Types de fautes</div>
+      <div class="error-types">
+        <label class="type-chip"><input type="checkbox" data-type="conjugaison">Conjugaison</label>
+        <label class="type-chip"><input type="checkbox" data-type="orthographe">Orthographe</label>
+        <label class="type-chip"><input type="checkbox" data-type="accord">Accords</label>
+        <label class="type-chip"><input type="checkbox" data-type="homophone">Homophones</label>
+        <label class="type-chip"><input type="checkbox" data-type="ponctuation">Ponctuation</label>
+        <label class="type-chip"><input type="checkbox" data-type="syntaxe">Syntaxe</label>
+      </div>
+    </div>
+
+    <div class="config-section">
+      <div class="config-label">Source</div>
+      <div class="source-toggle">
+        <button class="source-btn active" data-source="wikipedia">Wikipedia</button>
+        <button class="source-btn" data-source="lemonde">Le Monde</button>
+      </div>
+    </div>
+
+    <div class="config-actions">
+      <button class="btn btn-primary" id="btn-launch">Lancer la partie</button>
+      <a href="/vs.html" class="btn btn-outline" id="btn-vs">Mode VS ⚔</a>
+    </div>
+  </div>
+</section>
+
+<!-- Leaderboard -->
+<section class="leaderboard-section">
+  <div class="section-header">
+    <h2 class="section-title">Classement</h2>
+    <div class="filter-tabs">
+      <button class="filter-tab" data-period="week">Cette semaine</button>
+      <button class="filter-tab" data-period="month">Ce mois</button>
+      <button class="filter-tab active" data-period="all">Tout temps</button>
+    </div>
+  </div>
+  <table class="leaderboard-table">
+    <thead>
+      <tr>
+        <th>#</th>
+        <th>Joueur</th>
+        <th>Score moy.</th>
+        <th>Parties</th>
+      </tr>
+    </thead>
+    <tbody id="lb-tbody">
+      <tr><td colspan="4" style="text-align:center;color:var(--text-muted);padding:32px">Chargement…</td></tr>
+    </tbody>
+  </table>
+</section>
+
+<footer>
+  <span>Grammerde © 2024 — Corriger, c'est gagner.</span>
+</footer>
+
+<!-- Login Modal -->
+<div id="modal-login" class="modal-overlay hidden">
+  <div class="modal">
+    <div class="modal-title">
+      Connexion
+      <span class="modal-close" id="close-login">&times;</span>
+    </div>
+    <form id="form-login">
+      <div class="form-group">
+        <label class="form-label">Email</label>
+        <input id="login-email" type="email" class="form-input" placeholder="vous@exemple.fr" required>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Mot de passe</label>
+        <input id="login-password" type="password" class="form-input" placeholder="••••••••" required>
+      </div>
+      <div class="form-error" id="login-error"></div>
+      <button type="submit" class="btn btn-primary" style="width:100%;margin-top:16px">Se connecter</button>
+    </form>
+    <p style="text-align:center;margin-top:16px;font-size:13px;color:var(--text-dim)">
+      Pas de compte ? <a href="#" id="link-to-register" style="color:var(--green)">S'inscrire</a>
+    </p>
+  </div>
+</div>
+
+<!-- Register Modal -->
+<div id="modal-register" class="modal-overlay hidden">
+  <div class="modal">
+    <div class="modal-title">
+      Inscription
+      <span class="modal-close" id="close-register">&times;</span>
+    </div>
+    <form id="form-register">
+      <div class="form-group">
+        <label class="form-label">Pseudo</label>
+        <input id="register-username" type="text" class="form-input" placeholder="GrammairNinja" required minlength="2">
+      </div>
+      <div class="form-group">
+        <label class="form-label">Email</label>
+        <input id="register-email" type="email" class="form-input" placeholder="vous@exemple.fr" required>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Mot de passe</label>
+        <input id="register-password" type="password" class="form-input" placeholder="••••••••" required minlength="6">
+      </div>
+      <div class="form-error" id="register-error"></div>
+      <button type="submit" class="btn btn-primary" style="width:100%;margin-top:16px">Créer mon compte</button>
+    </form>
+    <p style="text-align:center;margin-top:16px;font-size:13px;color:var(--text-dim)">
+      Déjà un compte ? <a href="#" id="link-to-login" style="color:var(--green)">Se connecter</a>
+    </p>
+  </div>
+</div>
+
+<script type="module" src="/js/app.js"></script>
+</body>
+</html>
