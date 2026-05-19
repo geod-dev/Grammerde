@@ -12,27 +12,27 @@
   /* Primary — Red */
   --red: #C41E3A;
   --red-dim: rgba(196, 30, 58, 0.08);
-  --red-badge: rgba(196, 30, 58, 0.5);
+  --red-badge: rgba(196, 30, 58, 0.15);
 
   /* Blue */
   --blue: #1E4DB7;
   --blue-dim: rgba(30, 77, 183, 0.08);
-  --blue-badge: rgba(30, 77, 183, 0.5);
+  --blue-badge: rgba(30, 77, 183, 0.15);
 
   /* Orange */
   --orange: #C44B0B;
   --orange-dim: rgba(196, 75, 11, 0.08);
-  --orange-badge: rgba(196, 75, 11, 0.5);
+  --orange-badge: rgba(196, 75, 11, 0.15);
 
   /* Green */
   --green: #1A7842;
   --green-dim: rgba(26, 120, 66, 0.08);
-  --green-badge: rgba(26, 120, 66, 0.5);
+  --green-badge: rgba(26, 120, 66, 0.15);
 
   /* Text */
   --text: #1A1917;
-  --text-dim: #6B6660;
-  --text-muted: #A8A29E;
+  --text-dim: #4F4A45;
+  --text-muted: #6D6660;
 
   /* Typography */
   --font-body: 'Aleo', serif;
