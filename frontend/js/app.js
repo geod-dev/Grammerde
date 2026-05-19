@@ -5,7 +5,7 @@ updateNav();
 document.getElementById('btn-logout')?.addEventListener('click', logout);
 
 // ── Configurator ─────────────────────────────────────────────────────────────
-let config = { difficulty: 'moyen', errorTypes: [], source: 'wikipedia' };
+let config = { difficulty: 'moyen', errorTypes: ['conjugaison', 'orthographe', 'accord', 'homophone', 'ponctuation', 'syntaxe'], source: 'wikipedia' };
 
 // Difficulty buttons
 document.querySelectorAll('.diff-btn').forEach(btn => {

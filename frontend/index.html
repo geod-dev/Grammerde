@@ -3,7 +3,41 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Grammerde — Corrige tes fautes</title>
+  <title>Grammerde — Corrige les fautes cachées</title>
+  <meta name="description" content="Grammerde — Le jeu de correction de texte en français. Trouve les fautes cachées dans de vrais articles, grimpe dans le classement et défie tes amis en mode VS.">
+  <meta name="robots" content="index, follow">
+  <link rel="canonical" href="https://grammerde.fr/">
+
+  <!-- Open Graph -->
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://grammerde.fr/">
+  <meta property="og:title" content="Grammerde — Corrige les fautes cachées">
+  <meta property="og:description" content="Le jeu de correction de texte en français. Trouve les fautes dans de vrais articles, grimpe dans le classement et défie tes amis en mode VS.">
+  <meta property="og:image" content="https://grammerde.fr/og-image.png">
+  <meta property="og:locale" content="fr_FR">
+  <meta property="og:site_name" content="Grammerde">
+
+  <!-- Twitter Card -->
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="Grammerde — Corrige les fautes cachées">
+  <meta name="twitter:description" content="Le jeu de correction de texte en français. Trouve les fautes dans de vrais articles, grimpe dans le classement et défie tes amis en mode VS.">
+  <meta name="twitter:image" content="https://grammerde.fr/og-image.png">
+
+  <!-- JSON-LD -->
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "WebApplication",
+    "name": "Grammerde",
+    "description": "Jeu de correction de texte en français — trouve les fautes cachées dans de vrais articles.",
+    "url": "https://grammerde.fr",
+    "applicationCategory": "GameApplication",
+    "operatingSystem": "Web",
+    "inLanguage": "fr",
+    "offers": { "@type": "Offer", "price": "0", "priceCurrency": "EUR" }
+  }
+  </script>
+
   <link rel="stylesheet" href="/css/style.css">
 </head>
 <body>
@@ -65,12 +99,12 @@
     <div class="config-section">
       <div class="config-label">Types de fautes</div>
       <div class="error-types">
-        <label class="type-chip"><input type="checkbox" data-type="conjugaison">Conjugaison</label>
-        <label class="type-chip"><input type="checkbox" data-type="orthographe">Orthographe</label>
-        <label class="type-chip"><input type="checkbox" data-type="accord">Accords</label>
-        <label class="type-chip"><input type="checkbox" data-type="homophone">Homophones</label>
-        <label class="type-chip"><input type="checkbox" data-type="ponctuation">Ponctuation</label>
-        <label class="type-chip"><input type="checkbox" data-type="syntaxe">Syntaxe</label>
+        <label class="type-chip active"><input type="checkbox" data-type="conjugaison" checked>Conjugaison</label>
+        <label class="type-chip active"><input type="checkbox" data-type="orthographe" checked>Orthographe</label>
+        <label class="type-chip active"><input type="checkbox" data-type="accord" checked>Accords</label>
+        <label class="type-chip active"><input type="checkbox" data-type="homophone" checked>Homophones</label>
+        <label class="type-chip active"><input type="checkbox" data-type="ponctuation" checked>Ponctuation</label>
+        <label class="type-chip active"><input type="checkbox" data-type="syntaxe" checked>Syntaxe</label>
       </div>
     </div>
 

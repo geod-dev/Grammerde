@@ -486,6 +486,13 @@ footer {
 
 .error-word.corrected:hover { background: var(--green-dim); animation: none; }
 
+.word-selectable.corrected {
+  color: var(--green);
+  text-decoration: underline var(--green);
+  text-decoration-thickness: 1.5px;
+}
+.word-selectable.corrected:hover { background: var(--green-dim); }
+
 /* Correction popup */
 .popup-overlay {
   position: fixed;
