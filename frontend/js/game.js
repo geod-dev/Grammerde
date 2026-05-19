@@ -91,8 +91,9 @@ function submitCorrection() {
   if (existing >= 0) corrections[existing].correction = correction;
   else corrections.push({ wrong_word: wrongWord, correction });
 
+  currentErrorWord.textContent = correction;
   currentErrorWord.classList.add('corrected');
-  currentErrorWord.title = `Votre correction: ${correction}`;
+  currentErrorWord.title = `Correction de "${wrongWord}"→ "${correction}"`;
   closePopup();
   updateProgress();
 }
