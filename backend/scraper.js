@@ -21,10 +21,8 @@ export async function scrapeRandom(source = 'wikipedia') {
       return await attemptScrape();
     } catch (error) {
       if (RETRIABLE_ERRORS.includes(error.message) && attempt < MAX_RETRIES - 1) {
-        // Silently retry for retriable errors
         continue;
       }
-      // Throw if it's not a retriable error or we've exhausted retries
       throw error;
     }
   }
@@ -47,7 +45,8 @@ async function scrapeWikipedia() {
 
   let text = paragraphs.join('\n\n');
   text = cleanText(text);
-  text = trimToWordCount(text, 400, 800);
+  // Send more text to the AI — it will cut to the requested size
+  text = trimToWordCount(text, 400, 1200);
 
   if (text.split(/\s+/).length < 100) throw new Error('Article trop court');
   return { text, url };
@@ -60,7 +59,6 @@ async function scrapeLeMonde() {
   const html = await res.text();
   const $ = load(html);
 
-  // Find first article link not behind paywall
   let articleUrl = null;
   $('a[href]').each((_, el) => {
     const href = $(el).attr('href');
@@ -77,7 +75,6 @@ async function scrapeLeMonde() {
   const articleHtml = await articleRes.text();
   const $a = load(articleHtml);
 
-  // Check for paywall
   if ($a('.article__restricted-area').length > 0) throw new Error('Article derrière paywall');
 
   const paragraphs = [];
@@ -88,7 +85,7 @@ async function scrapeLeMonde() {
 
   let text = paragraphs.join('\n\n');
   text = cleanText(text);
-  text = trimToWordCount(text, 400, 800);
+  text = trimToWordCount(text, 400, 1200);
 
   if (text.split(/\s+/).length < 100) throw new Error('Texte insuffisant');
   return { text, url: articleUrl };
@@ -96,7 +93,11 @@ async function scrapeLeMonde() {
 
 function cleanText(text) {
   return text
-    .replace(/\[\d+\]/g, '')
+    .replace(/\[\d+\]/g, '')                                                  // [1] references
+    .replace(/\[note \d+\]/gi, '')                                             // [note 1]
+    .replace(/\[réf\.\s*nécessaire\]/gi, '')                                   // [réf. nécessaire]
+    .replace(/\([^)]*[Ͱ-ϿЀ-ӿ؀-ۿ][^)]*\)/g, '')  // Greek/Cyrillic in parens
+    .replace(/\((?:en|de|it|es|pt|nl|pl|ar|zh|ja|ko|ru|la|gr|el)\s[^)]+\)/gi, '') // (en something)
     .replace(/\(\s*\)/g, '')
     .replace(/\s{2,}/g, ' ')
     .replace(/\n{3,}/g, '\n\n')
@@ -106,7 +107,6 @@ function cleanText(text) {
 function trimToWordCount(text, min, max) {
   const words = text.split(/\s+/);
   if (words.length <= max) return text;
-  // Cut at a sentence boundary near max words
   const slice = words.slice(0, max).join(' ');
   const lastDot = slice.lastIndexOf('.');
   return lastDot > min * 4 ? slice.slice(0, lastDot + 1) : slice;

@@ -11,6 +11,10 @@ export function setSession(token, user) {
   localStorage.setItem('user', JSON.stringify(user));
 }
 
+export function updateUser(user) {
+  localStorage.setItem('user', JSON.stringify(user));
+}
+
 export function logout() {
   localStorage.removeItem('token');
   localStorage.removeItem('user');
@@ -35,6 +39,17 @@ export async function apiPost(path, body) {
 
 export async function apiGet(path) {
   const res = await fetch(API + path, { headers: authHeaders() });
+  const data = await res.json();
+  if (!res.ok) throw new Error(data.error || 'Erreur serveur');
+  return data;
+}
+
+export async function apiPut(path, body) {
+  const res = await fetch(API + path, {
+    method: 'PUT',
+    headers: { 'Content-Type': 'application/json', ...authHeaders() },
+    body: JSON.stringify(body),
+  });
   const data = await res.json();
   if (!res.ok) throw new Error(data.error || 'Erreur serveur');
   return data;

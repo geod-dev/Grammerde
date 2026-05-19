@@ -31,7 +31,18 @@ db.exec(`
     corrections_count INTEGER DEFAULT 0,
     total_errors INTEGER DEFAULT 0,
     duration_seconds INTEGER,
+    timer_duration INTEGER DEFAULT 120,
     completed_at DATETIME
+  );
+
+  CREATE TABLE IF NOT EXISTS session_corrections (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    session_id INTEGER REFERENCES sessions(id) ON DELETE CASCADE,
+    span_idx INTEGER NOT NULL,
+    user_answer TEXT NOT NULL,
+    is_correct INTEGER NOT NULL DEFAULT 0,
+    corrected_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+    UNIQUE(session_id, span_idx)
   );
 
   CREATE TABLE IF NOT EXISTS vs_rooms (
@@ -55,5 +66,29 @@ db.exec(`
     finished_at DATETIME DEFAULT CURRENT_TIMESTAMP
   );
 `);
+
+// Migrations for existing databases
+[
+  'ALTER TABLE sessions ADD COLUMN timer_duration INTEGER DEFAULT 120',
+].forEach(sql => { try { db.exec(sql); } catch {} });
+
+// Migrate session_corrections: wrong_word → span_idx
+try {
+  const cols = db.pragma('table_info(session_corrections)');
+  if (cols.some(c => c.name === 'wrong_word')) {
+    db.exec(`
+      DROP TABLE session_corrections;
+      CREATE TABLE session_corrections (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        session_id INTEGER REFERENCES sessions(id) ON DELETE CASCADE,
+        span_idx INTEGER NOT NULL,
+        user_answer TEXT NOT NULL,
+        is_correct INTEGER NOT NULL DEFAULT 0,
+        corrected_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+        UNIQUE(session_id, span_idx)
+      );
+    `);
+  }
+} catch {}
 
 export default db;

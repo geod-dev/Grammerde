@@ -1,4 +1,4 @@
-import { apiGet, getToken, getUser, logout, showToast, updateNav } from './auth.js';
+import { apiGet, apiPut, getToken, getUser, updateUser, logout, showToast, updateNav } from './auth.js';
 
 updateNav();
 document.getElementById('btn-logout')?.addEventListener('click', logout);
@@ -86,10 +86,10 @@ function renderChart(history) {
       datasets: [{
         label: 'Score',
         data,
-        borderColor: '#06d6a0',
-        backgroundColor: 'rgba(6,214,160,0.08)',
+        borderColor: '#1A7842',
+        backgroundColor: 'rgba(26,120,66,0.08)',
         tension: 0.4,
-        pointBackgroundColor: '#06d6a0',
+        pointBackgroundColor: '#1A7842',
         pointRadius: 4,
         fill: true,
       }],
@@ -104,10 +104,10 @@ function renderChart(history) {
         },
       },
       scales: {
-        x: { grid: { color: '#222' }, ticks: { color: '#666' } },
+        x: { grid: { color: '#E3DDD5' }, ticks: { color: '#6D6660' } },
         y: {
-          grid: { color: '#222' },
-          ticks: { color: '#666', callback: v => v + '%' },
+          grid: { color: '#E3DDD5' },
+          ticks: { color: '#6D6660', callback: v => v + '%' },
           min: 0, max: 100,
         },
       },
@@ -139,3 +139,67 @@ function renderHistory(history) {
 }
 
 loadProfile();
+
+// ── Edit Profile ──────────────────────────────────────────────────────────────
+
+function dicebearUrl(seed) {
+  return `https://api.dicebear.com/7.x/pixel-art/svg?seed=${encodeURIComponent(seed || 'default')}`;
+}
+
+function openEditModal() {
+  const me = getUser();
+  document.getElementById('edit-username').value = me?.username || '';
+  document.getElementById('edit-avatar-seed').value = me?.avatar_seed || '';
+  document.getElementById('edit-avatar-preview').src = dicebearUrl(me?.avatar_seed || me?.username || '');
+  document.getElementById('edit-profile-error').textContent = '';
+  document.getElementById('modal-edit-profile').classList.remove('hidden');
+  document.getElementById('edit-username').focus();
+}
+
+function closeEditModal() {
+  document.getElementById('modal-edit-profile').classList.add('hidden');
+}
+
+document.getElementById('btn-edit-profile')?.addEventListener('click', openEditModal);
+document.getElementById('close-edit-profile')?.addEventListener('click', closeEditModal);
+document.getElementById('btn-cancel-edit')?.addEventListener('click', closeEditModal);
+document.getElementById('modal-edit-profile')?.addEventListener('click', (e) => {
+  if (e.target.id === 'modal-edit-profile') closeEditModal();
+});
+
+document.getElementById('edit-avatar-seed')?.addEventListener('input', (e) => {
+  const username = document.getElementById('edit-username').value.trim();
+  const seed = e.target.value.trim() || username;
+  if (seed) document.getElementById('edit-avatar-preview').src = dicebearUrl(seed);
+});
+
+document.getElementById('edit-username')?.addEventListener('input', (e) => {
+  const seed = document.getElementById('edit-avatar-seed').value.trim() || e.target.value.trim();
+  if (seed) document.getElementById('edit-avatar-preview').src = dicebearUrl(seed);
+});
+
+document.getElementById('form-edit-profile')?.addEventListener('submit', async (e) => {
+  e.preventDefault();
+  const username = document.getElementById('edit-username').value.trim();
+  const avatar_seed = document.getElementById('edit-avatar-seed').value.trim();
+  const err = document.getElementById('edit-profile-error');
+  err.textContent = '';
+
+  const btn = e.target.querySelector('[type="submit"]');
+  btn.disabled = true;
+  btn.textContent = 'Enregistrement…';
+
+  try {
+    const updated = await apiPut('/auth/profile', { username, avatar_seed });
+    updateUser(updated);
+    updateNav();
+    renderHeader(updated);
+    closeEditModal();
+    showToast('Profil mis à jour !', 'success');
+  } catch (ex) {
+    err.textContent = ex.message;
+  } finally {
+    btn.disabled = false;
+    btn.textContent = 'Enregistrer';
+  }
+});

@@ -48,17 +48,38 @@ app.get('/api/auth/me', authenticateToken, (req, res) => {
   res.json(user);
 });
 
+app.put('/api/auth/profile', authenticateToken, (req, res) => {
+  try {
+    const { username, avatar_seed } = req.body;
+    if (!username || username.trim().length < 2) return res.status(400).json({ error: 'Pseudo trop court (2 caractères min)' });
+
+    const taken = db.prepare('SELECT id FROM users WHERE username = ? AND id != ?').get(username.trim(), req.user.id);
+    if (taken) return res.status(400).json({ error: 'Ce pseudo est déjà utilisé' });
+
+    const seed = (avatar_seed || '').trim() || username.trim();
+    db.prepare('UPDATE users SET username = ?, avatar_seed = ? WHERE id = ?').run(username.trim(), seed, req.user.id);
+
+    const user = db.prepare('SELECT id, username, email, avatar_seed, created_at FROM users WHERE id = ?').get(req.user.id);
+    res.json(user);
+  } catch (e) {
+    res.status(500).json({ error: e.message });
+  }
+});
+
 // ── Game ──────────────────────────────────────────────────────────────────────
+
+const TIMER_DURATIONS = { court: 60, moyen: 120, long: 180 };
 
 app.post('/api/game/start', optionalAuth, async (req, res) => {
   try {
-    const { difficulty = 'moyen', errorTypes = [], source = 'wikipedia' } = req.body;
+    const { difficulty = 'moyen', errorTypes = [], source = 'wikipedia', textSize = 'moyen' } = req.body;
+    const timerDuration = TIMER_DURATIONS[textSize] || 120;
     const { text, url } = await scrapeRandom(source);
-    const { corrupted_text, errors_map } = await injectErrors(text, difficulty, errorTypes);
+    const { corrupted_text, errors_map } = await injectErrors(text, difficulty, errorTypes, textSize);
 
     const stmt = db.prepare(`
-      INSERT INTO sessions (user_id, source_url, original_text, corrupted_text, errors_map, difficulty, error_types, total_errors)
-      VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+      INSERT INTO sessions (user_id, source_url, original_text, corrupted_text, errors_map, difficulty, error_types, total_errors, timer_duration)
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
     `);
     const result = stmt.run(
       req.user?.id || null,
@@ -68,7 +89,8 @@ app.post('/api/game/start', optionalAuth, async (req, res) => {
       JSON.stringify(errors_map),
       difficulty,
       JSON.stringify(errorTypes),
-      errors_map.length
+      errors_map.length,
+      timerDuration
     );
 
     res.json({
@@ -76,10 +98,47 @@ app.post('/api/game/start', optionalAuth, async (req, res) => {
       corrupted_text,
       total_errors: errors_map.length,
       difficulty,
+      timer_duration: timerDuration,
     });
   } catch (e) {
     console.error('game/start error:', e);
     res.status(500).json({ error: 'Impossible de démarrer la partie: ' + e.message });
+  }
+});
+
+// Real-time correction validation
+app.post('/api/game/correct', optionalAuth, (req, res) => {
+  try {
+    const { session_id, span_idx, correction } = req.body;
+    if (session_id == null || span_idx == null || !correction) return res.status(400).json({ error: 'Paramètres manquants' });
+
+    const session = db.prepare('SELECT * FROM sessions WHERE id = ?').get(session_id);
+    if (!session) return res.status(404).json({ error: 'Session introuvable' });
+
+    const errorsMap = JSON.parse(session.errors_map);
+    const error = errorsMap.find(e => e.span_idx === span_idx);
+
+    if (!error) {
+      return res.json({ is_correct: false, not_an_error: true });
+    }
+
+    const is_correct = validateCorrection(correction, error.mot_valide);
+
+    db.prepare(`
+      INSERT INTO session_corrections (session_id, span_idx, user_answer, is_correct)
+      VALUES (?, ?, ?, ?)
+      ON CONFLICT(session_id, span_idx) DO UPDATE SET user_answer = excluded.user_answer, is_correct = excluded.is_correct
+    `).run(session_id, span_idx, correction, is_correct ? 1 : 0);
+
+    res.json({
+      is_correct,
+      mot_valide:  error.mot_valide,
+      error_type:  error.error_type,
+      explanation: error.explanation,
+    });
+  } catch (e) {
+    console.error('game/correct error:', e);
+    res.status(500).json({ error: e.message });
   }
 });
 
@@ -93,18 +152,36 @@ app.post('/api/game/submit', optionalAuth, (req, res) => {
     }
 
     const errorsMap = JSON.parse(session.errors_map);
+
+    // Prefer server-stored corrections; fallback to client-sent
+    const stored = db.prepare('SELECT * FROM session_corrections WHERE session_id = ?').all(session_id);
+
     let correct = 0;
     const details = errorsMap.map((err) => {
-      const userCorrection = corrections.find((c) => c.wrong_word === err.wrong_word);
-      const isCorrect = userCorrection ? validateCorrection(userCorrection.correction, err.correct_word) : false;
+      const sv = stored.find(c => c.span_idx === err.span_idx);
+      const cl = corrections.find(c => c.span_idx === err.span_idx);
+
+      let userAnswer, isCorrect;
+      if (sv) {
+        userAnswer = sv.user_answer;
+        isCorrect = sv.is_correct === 1;
+      } else if (cl) {
+        userAnswer = cl.correction;
+        isCorrect = validateCorrection(cl.correction, err.mot_valide);
+      } else {
+        userAnswer = null;
+        isCorrect = false;
+      }
+
       if (isCorrect) correct++;
       return {
-        wrong_word: err.wrong_word,
-        correct_word: err.correct_word,
-        error_type: err.error_type,
-        explanation: err.explanation,
-        user_answer: userCorrection?.correction || null,
-        is_correct: isCorrect,
+        span_idx:     err.span_idx,
+        mot_invalide: err.mot_invalide,
+        mot_valide:   err.mot_valide,
+        error_type:   err.error_type,
+        explanation:  err.explanation,
+        user_answer:  userAnswer,
+        is_correct:   isCorrect,
       };
     });
 
@@ -196,7 +273,7 @@ app.post('/api/vs/submit', authenticateToken, (req, res) => {
 
 // ── WebSocket ─────────────────────────────────────────────────────────────────
 
-const rooms = new Map(); // roomCode → { p1: ws, p2: ws, timer, scores, gameData }
+const rooms = new Map();
 
 wss.on('connection', (ws, req) => {
   ws.isAlive = true;
@@ -218,7 +295,6 @@ wss.on('connection', (ws, req) => {
       ws.userId = user_id;
       ws.username = username;
 
-      // Replace if reconnecting
       const existing = roomState.players.findIndex(p => p.userId === user_id);
       if (existing >= 0) roomState.players[existing] = ws;
       else roomState.players.push(ws);
@@ -227,25 +303,22 @@ wss.on('connection', (ws, req) => {
       broadcast(roomState.players, { type: 'player_joined', username, player_count: roomState.players.length });
 
       if (roomState.players.length === 2 && !roomState.gameData) {
-        // Both players connected — start game
         try {
           const { text } = await scrapeRandom('wikipedia');
-          const { corrupted_text, errors_map } = await injectErrors(text, room.difficulty || 'moyen', []);
+          const { corrupted_text, errors_map } = await injectErrors(text, room.difficulty || 'moyen', [], 'moyen');
 
           db.prepare('UPDATE vs_rooms SET corrupted_text = ?, errors_map = ?, status = ? WHERE room_code = ?')
             .run(corrupted_text, JSON.stringify(errors_map), 'playing', room_code);
 
           roomState.gameData = { corrupted_text, errors_map, total: errors_map.length };
 
-          const startMsg = {
+          broadcast(roomState.players, {
             type: 'game_start',
             corrupted_text,
             total_errors: errors_map.length,
             duration: 120,
-          };
-          broadcast(roomState.players, startMsg);
+          });
 
-          // Timer
           let remaining = 120;
           roomState.timer = setInterval(() => {
             remaining--;
@@ -275,7 +348,6 @@ wss.on('connection', (ws, req) => {
     roomState.players = roomState.players.filter(p => p !== ws);
 
     if (roomState.players.length === 1 && roomState.gameData) {
-      // Opponent disconnected — give winner 10s
       broadcast(roomState.players, { type: 'opponent_disconnected' });
       setTimeout(() => {
         if (rooms.has(roomCode)) endGame(roomCode, userId);
@@ -300,13 +372,7 @@ function endGame(roomCode, disconnectedUserId = null) {
   }
 
   db.prepare('UPDATE vs_rooms SET status = ?, winner_id = ? WHERE room_code = ?').run('finished', winnerId, roomCode);
-
-  broadcast(roomState.players, {
-    type: 'game_over',
-    scores,
-    winner_id: winnerId,
-  });
-
+  broadcast(roomState.players, { type: 'game_over', scores, winner_id: winnerId });
   rooms.delete(roomCode);
 }
 
@@ -315,7 +381,6 @@ function broadcast(players, data) {
   players.forEach(p => { if (p.readyState === 1) p.send(msg); });
 }
 
-// Heartbeat
 setInterval(() => {
   wss.clients.forEach(ws => {
     if (!ws.isAlive) return ws.terminate();

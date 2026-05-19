@@ -1,4 +1,4 @@
-import { apiPost, authHeaders, showToast, updateNav } from './auth.js';
+import { apiPost, showToast, updateNav } from './auth.js';
 
 updateNav();
 
@@ -6,63 +6,80 @@ const gameDataRaw = sessionStorage.getItem('gameData');
 if (!gameDataRaw) { window.location.href = '/'; }
 
 const gameData = JSON.parse(gameDataRaw);
+
+// corrections: [{ idx, wrong_word, correction }] — keyed by span index to prevent cross-pollination
 let corrections = [];
 let startTime = Date.now();
 let currentErrorWord = null;
+let timerInterval = null;
+let gameOver = false;
 
-// ── Render text with error highlights ────────────────────────────────────────
+// ── Timer ─────────────────────────────────────────────────────────────────────
 
-function renderText(text, errorsMap) {
-  // Build list of positions to highlight
-  // We use wrong_word occurrences as markers
+function startTimer(duration) {
+  const timerBlock = document.getElementById('timer-block');
+  const timerEl = document.getElementById('timer-value');
+  if (timerBlock) timerBlock.classList.remove('hidden');
+
+  let remaining = duration;
+
+  function tick() {
+    const m = Math.floor(remaining / 60);
+    const s = remaining % 60;
+    if (timerEl) {
+      timerEl.textContent = `${m}:${s.toString().padStart(2, '0')}`;
+      timerEl.classList.toggle('urgent', remaining <= 30);
+    }
+    if (remaining <= 0) {
+      clearInterval(timerInterval);
+      if (!gameOver) {
+        closePopup();
+        document.getElementById('btn-submit')?.click();
+      }
+    }
+    remaining--;
+  }
+
+  tick();
+  timerInterval = setInterval(tick, 1000);
+}
+
+// ── Render text ───────────────────────────────────────────────────────────────
+
+function renderAllWords(text) {
   const container = document.getElementById('text-display');
   if (!container) return;
-
-  // Build segments from errors_map
-  let html = text;
-
-  // Sort errors by position (if available) then by word occurrence
-  // We'll replace each wrong_word occurrence once
-  const replaced = new Set();
-  let result = '';
-  let i = 0;
-
-  // Build word spans - wrap each error word with a span
+  let idx = 0;
   const words = text.split(/(\s+)/);
-  result = words.map(segment => {
-    if (/\s+/.test(segment)) return segment;
-    // Check if this word matches any error
-    const error = errorsMap.find(e => {
-      const normalize = s => s.replace(/[.,;:!?«»"'()\[\]]/g, '').trim();
-      return normalize(segment).toLowerCase() === normalize(e.wrong_word).toLowerCase() && !replaced.has(e.wrong_word + '_' + segment);
-    });
-    if (error) {
-      replaced.add(error.wrong_word + '_' + segment);
-      const idx = errorsMap.indexOf(error);
-      return `<span class="error-word" data-idx="${idx}" data-wrong="${error.wrong_word}" title="Cliquez pour corriger">${segment}</span>`;
-    }
-    return segment;
+  container.innerHTML = words.map(seg => {
+    if (/^\s+$/.test(seg) || /^[.,;:!?«»"'()\[\]\-—–]+$/.test(seg)) return seg;
+    const clean = seg.replace(/^[^a-zA-ZÀ-ÿ]+|[^a-zA-ZÀ-ÿ]+$/g, '');
+    if (!clean) return seg;
+    const i = idx++;
+    return `<span class="word-selectable" data-idx="${i}" data-word="${clean}">${seg}</span>`;
   }).join('');
 
-  container.innerHTML = result;
-
-  // Add click handlers
-  container.querySelectorAll('.error-word').forEach(el => {
-    el.addEventListener('click', () => openPopup(el));
+  container.querySelectorAll('.word-selectable').forEach(el => {
+    el.style.cursor = 'pointer';
+    el.addEventListener('click', () => openWordPopup(el));
   });
 }
 
 // ── Popup ─────────────────────────────────────────────────────────────────────
 
-function openPopup(el) {
-  currentErrorWord = el;
-  const wrongWord = el.dataset.wrong;
-  const existing = corrections.find(c => c.wrong_word === wrongWord);
+function openWordPopup(el) {
+  if (gameOver) return;
+  const idx = el.dataset.idx;
+  const word = el.dataset.word;
 
-  document.getElementById('popup-word').textContent = wrongWord;
+  // Pre-fill only if THIS specific span was already corrected
+  const existing = corrections.find(c => c.idx === idx);
+
+  document.getElementById('popup-word').textContent = word;
   document.getElementById('popup-input').value = existing?.correction || '';
   document.getElementById('popup-overlay').classList.remove('hidden');
   document.getElementById('popup-input').focus();
+  currentErrorWord = el;
 }
 
 function closePopup() {
@@ -82,42 +99,63 @@ document.getElementById('popup-input')?.addEventListener('keydown', (e) => {
 
 document.getElementById('btn-popup-skip')?.addEventListener('click', closePopup);
 
-function submitCorrection() {
+async function submitCorrection() {
   const correction = document.getElementById('popup-input').value.trim();
-  if (!correction) return;
-  const wrongWord = currentErrorWord.dataset.wrong;
+  if (!correction || !currentErrorWord) return;
 
-  const existing = corrections.findIndex(c => c.wrong_word === wrongWord);
-  if (existing >= 0) corrections[existing].correction = correction;
-  else corrections.push({ wrong_word: wrongWord, correction });
+  const idx = currentErrorWord.dataset.idx;
+  const wrongWord = currentErrorWord.dataset.word;
 
+  // Update corrections array keyed by idx (not by word)
+  const existingIdx = corrections.findIndex(c => c.idx === idx);
+  if (existingIdx >= 0) corrections[existingIdx].correction = correction;
+  else corrections.push({ idx, wrong_word: wrongWord, correction });
+
+  // Visual: mark span as corrected (blue badge)
   currentErrorWord.textContent = correction;
   currentErrorWord.classList.add('corrected');
-  currentErrorWord.title = `Correction de "${wrongWord}"→ "${correction}"`;
+
   closePopup();
   updateProgress();
+
+  // Send to server for real-time validation and storage (fire-and-forget)
+  try {
+    await apiPost('/game/correct', {
+      session_id: gameData.session_id,
+      span_idx: parseInt(idx),
+      correction,
+    });
+  } catch { /* non-blocking — server fallback handles it at submit */ }
 }
 
 function updateProgress() {
   const total = gameData.total_errors;
-  const done = corrections.length;
+  const done = Math.min(corrections.length, total);
   const pct = total ? (done / total) * 100 : 0;
-  document.getElementById('progress-fill').style.width = pct + '%';
-  document.getElementById('progress-label').textContent = `${done} / ${total} fautes corrigées`;
+  document.getElementById('progress-fill').style.width = Math.min(pct, 100) + '%';
+  document.getElementById('progress-label').textContent = `${corrections.length} mot${corrections.length > 1 ? 's' : ''} modifié${corrections.length > 1 ? 's' : ''} · ${total} faute${total > 1 ? 's' : ''} cachée${total > 1 ? 's' : ''}`;
+  document.getElementById('stat-corrections').textContent = corrections.length;
+  document.getElementById('stat-total').textContent = total;
 }
 
-// ── Submit final ─────────────────────────────────────────────────────────────
+// ── Submit ────────────────────────────────────────────────────────────────────
 
 document.getElementById('btn-submit')?.addEventListener('click', async () => {
+  if (gameOver) return;
+  gameOver = true;
+  clearInterval(timerInterval);
+
   const duration = Math.round((Date.now() - startTime) / 1000);
   const btn = document.getElementById('btn-submit');
   btn.disabled = true;
   btn.textContent = 'Correction…';
 
+  const correctionsPayload = corrections.map(c => ({ span_idx: parseInt(c.idx), correction: c.correction }));
+
   try {
     const result = await apiPost('/game/submit', {
       session_id: gameData.session_id,
-      corrections,
+      corrections: correctionsPayload,
       duration_seconds: duration,
     });
     sessionStorage.setItem('gameResult', JSON.stringify(result));
@@ -125,10 +163,13 @@ document.getElementById('btn-submit')?.addEventListener('click', async () => {
     renderResults(result);
   } catch (e) {
     showToast(e.message, 'error');
+    gameOver = false;
     btn.disabled = false;
     btn.textContent = 'Terminer et voir le score';
   }
 });
+
+// ── Results ───────────────────────────────────────────────────────────────────
 
 function escapeHtml(str) {
   return String(str)
@@ -148,36 +189,34 @@ function renderResults(result) {
   document.getElementById('score-summary').textContent =
     `${result.correct} / ${result.total} fautes corrigées correctement`;
 
-  const normalize = s => s.replace(/[.,;:!?«»"'()\[\]\-—–]+/g, '').trim().toLowerCase();
-
-  // Map normalizedWrongWord → detail
+  // All maps keyed by span_idx (integer) — no word-text ambiguity
   const detailMap = new Map();
-  result.details.forEach(d => detailMap.set(normalize(d.wrong_word), d));
+  result.details.forEach(d => detailMap.set(d.span_idx, d));
 
-  // Map normalizedWrongWord → user correction
   const userAnswerMap = new Map();
-  corrections.forEach(c => userAnswerMap.set(normalize(c.wrong_word), c.correction));
+  corrections.forEach(c => userAnswerMap.set(parseInt(c.idx), c.correction));
 
-  // Words user touched that were NOT actual errors → blue badge
   const touchedCorrectSet = new Set();
   corrections.forEach(c => {
-    const key = normalize(c.wrong_word);
-    if (!detailMap.has(key)) touchedCorrectSet.add(key);
+    const idx = parseInt(c.idx);
+    if (!detailMap.has(idx)) touchedCorrectSet.add(idx);
   });
 
-  const usedErrors = new Set();
-  const segments = gameData.corrupted_text.split(/(\s+)/);
+  // Walk tokens with the same logic as renderAllWords to track span_idx
+  let spanIdx = 0;
+  const tokens = gameData.corrupted_text.split(/(\s+)/);
 
-  const html = segments.map(seg => {
+  const html = tokens.map(seg => {
     if (/^\s+$/.test(seg)) return seg;
-    const segNorm = normalize(seg);
-    if (!segNorm) return escapeHtml(seg);
+    const isPunct = /^[.,;:!?«»"'()\[\]\-—–]+$/.test(seg);
+    const clean   = seg.replace(/^[^a-zA-ZÀ-ÿ]+|[^a-zA-ZÀ-ÿ]+$/g, '');
+    if (isPunct || !clean) return escapeHtml(seg);
 
-    const detail = detailMap.get(segNorm);
-    if (detail && !usedErrors.has(segNorm)) {
-      usedErrors.add(segNorm);
-      const userAnswer = userAnswerMap.get(segNorm);
+    const currentIdx = spanIdx++;
 
+    const detail = detailMap.get(currentIdx);
+    if (detail) {
+      const userAnswer = userAnswerMap.get(currentIdx);
       let cls, display;
       if (!userAnswer) {
         cls = 'badge-result-red';
@@ -189,14 +228,12 @@ function renderResults(result) {
         cls = 'badge-result-orange';
         display = userAnswer;
       }
-
-      const tip = `<span class="tooltip-row"><span class="tooltip-label">Original</span><span>${escapeHtml(detail.wrong_word)}</span></span><span class="tooltip-row"><span class="tooltip-label">Votre réponse</span><span>${escapeHtml(userAnswer || '—')}</span></span><span class="tooltip-row"><span class="tooltip-label">Correction</span><span>${escapeHtml(detail.correct_word)}</span></span><span class="tooltip-divider"></span><span class="tooltip-row"><span class="tooltip-label">${escapeHtml(detail.error_type)}</span><span>${escapeHtml(detail.explanation || '')}</span></span>`;
-
+      const tip = `<span class="tooltip-row"><span class="tooltip-label">Mot invalide</span><span>${escapeHtml(detail.mot_invalide)}</span></span><span class="tooltip-row"><span class="tooltip-label">Votre réponse</span><span>${escapeHtml(userAnswer || '—')}</span></span><span class="tooltip-row"><span class="tooltip-label">Mot valide</span><span>${escapeHtml(detail.mot_valide)}</span></span><span class="tooltip-divider"></span><span class="tooltip-row"><span class="tooltip-label">${escapeHtml(detail.error_type)}</span><span>${escapeHtml(detail.explanation || '')}</span></span>`;
       return `<span class="result-badge ${cls}">${escapeHtml(display)}<span class="result-tooltip">${tip}</span></span>`;
     }
 
-    if (touchedCorrectSet.has(segNorm)) {
-      const c = corrections.find(x => normalize(x.wrong_word) === segNorm);
+    if (touchedCorrectSet.has(currentIdx)) {
+      const c = corrections.find(x => parseInt(x.idx) === currentIdx);
       const tip = `<span class="tooltip-row"><span class="tooltip-label">Mot correct</span><span>${escapeHtml(seg)}</span></span><span class="tooltip-row"><span class="tooltip-label">Votre modification</span><span>${escapeHtml(c?.correction || '—')}</span></span>`;
       return `<span class="result-badge badge-result-blue">${escapeHtml(c?.correction || seg)}<span class="result-tooltip">${tip}</span></span>`;
     }
@@ -214,47 +251,9 @@ document.getElementById('btn-replay')?.addEventListener('click', () => {
 
 // ── Init ─────────────────────────────────────────────────────────────────────
 
-// For VS mode - check if timer data passed
-const vsTimerData = sessionStorage.getItem('vsTimer');
-if (vsTimerData) {
-  document.getElementById('timer-block')?.classList.remove('hidden');
-}
-
-renderText(gameData.corrupted_text, []); // We don't have errors_map on client for security
-// Fallback: parse text to find suspicious patterns visually
-// The server sends total_errors but not the errors_map
-// We render the whole text as is and let users click on any word
-
-// Actually let's re-render properly: we need to present the corrupted text
-// For the game page the server returned corrupted_text directly
-// We create clickable spans for every word so user can select which to correct
-function renderAllWords(text) {
-  const container = document.getElementById('text-display');
-  if (!container) return;
-  const words = text.split(/(\s+)/);
-  container.innerHTML = words.map(seg => {
-    if (/\s+/.test(seg) || /^[.,;:!?«»"'()\[\]\-—–]+$/.test(seg)) return seg;
-    const clean = seg.replace(/^[^a-zA-ZÀ-ÿ]+|[^a-zA-ZÀ-ÿ]+$/g, '');
-    if (!clean) return seg;
-    return `<span class="word-selectable" data-word="${clean}">${seg}</span>`;
-  }).join('');
-
-  container.querySelectorAll('.word-selectable').forEach(el => {
-    el.style.cursor = 'pointer';
-    el.addEventListener('click', () => openWordPopup(el));
-  });
-}
-
-function openWordPopup(el) {
-  const word = el.dataset.word;
-  document.getElementById('popup-word').textContent = word;
-  const existing = corrections.find(c => c.wrong_word === word);
-  document.getElementById('popup-input').value = existing?.correction || '';
-  document.getElementById('popup-overlay').classList.remove('hidden');
-  document.getElementById('popup-input').focus();
-  currentErrorWord = el;
-  currentErrorWord.dataset.wrong = word;
-}
-
 renderAllWords(gameData.corrupted_text);
 updateProgress();
+
+if (gameData.timer_duration) {
+  startTimer(gameData.timer_duration);
+}

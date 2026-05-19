@@ -1,18 +1,21 @@
 import { apiPost, apiGet, getToken, setSession, logout, updateNav, showToast } from './auth.js';
 
-// ── Nav ───────────────────────────────────────────────────────────────────────
 updateNav();
 document.getElementById('btn-logout')?.addEventListener('click', logout);
 
 // ── Configurator ─────────────────────────────────────────────────────────────
-let config = { difficulty: 'moyen', errorTypes: ['conjugaison', 'orthographe', 'accord', 'homophone', 'ponctuation', 'syntaxe'], source: 'wikipedia' };
+let config = {
+  textSize: 'moyen',
+  errorTypes: ['conjugaison', 'accord', 'homophone', 'orthographe'],
+  source: 'wikipedia',
+};
 
-// Difficulty buttons
-document.querySelectorAll('.diff-btn').forEach(btn => {
+// Text size buttons
+document.querySelectorAll('.size-group .diff-btn').forEach(btn => {
   btn.addEventListener('click', () => {
-    document.querySelectorAll('.diff-btn').forEach(b => b.classList.remove('active'));
+    document.querySelectorAll('.size-group .diff-btn').forEach(b => b.classList.remove('active'));
     btn.classList.add('active');
-    config.difficulty = btn.dataset.diff;
+    config.textSize = btn.dataset.size;
   });
 });
 
@@ -124,7 +127,6 @@ document.getElementById('link-to-login')?.addEventListener('click', (e) => {
   e.preventDefault(); closeModal('modal-register'); openModal('modal-login');
 });
 
-// Close on overlay click
 ['modal-login', 'modal-register'].forEach(id => {
   document.getElementById(id)?.addEventListener('click', (e) => {
     if (e.target.id === id) closeModal(id);
