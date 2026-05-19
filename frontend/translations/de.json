@@ -1,20 +1,220 @@
 {
   "wikipedia_subdomain": "de",
   "flag_code": "de",
+  "nav": {
+    "login": "Anmelden",
+    "register": "Registrieren",
+    "logout": "Abmelden",
+    "back": "← Zurück",
+    "home": "← Startseite"
+  },
   "hero": {
     "eyebrow": "Textkorrektionsspiel",
+    "title_html": "Kannst du alle<br><span class=\"correct\">Fehler</span><br><span class=\"strike\">finden</span>?",
     "subtitle": "Tagesauftrag: Die deutsche Sprache retten.",
-    "btn_play": "Jetzt spielen"
+    "btn_play": "Jetzt spielen",
+    "btn_vs": "VS-Modus ⚔"
   },
   "configurator": {
     "title": "Spiel konfigurieren",
     "text_size": "Textgröße",
+    "size": {
+      "short": "Kurz",
+      "short_desc": "~1 Absatz",
+      "medium": "Mittel",
+      "medium_desc": "~2 Absätze",
+      "long": "Lang",
+      "long_desc": "~3 Absätze"
+    },
     "error_types": "Fehlertypen",
-    "launch": "Spiel starten"
+    "types": {
+      "conjugaison": "Konjugation",
+      "accord": "Übereinstimmung",
+      "homophone": "Homofonien",
+      "orthographe": "Rechtschreibung"
+    },
+    "launch": "Spiel starten",
+    "btn_vs": "VS-Modus ⚔"
   },
-  "nav": {
-    "login": "Anmelden",
-    "register": "Registrieren",
-    "logout": "Abmelden"
+  "leaderboard": {
+    "title": "Rangliste",
+    "filter": {
+      "week": "Diese Woche",
+      "month": "Diesen Monat",
+      "all": "Alle Zeiten"
+    },
+    "col": {
+      "player": "Spieler",
+      "avg_score": "Ø Punkte",
+      "games": "Spiele"
+    }
+  },
+  "footer": "Grammerde © 2026 — Korrigieren ist gewinnen.",
+  "modal": {
+    "login": {
+      "title": "Anmelden",
+      "email": "E-Mail",
+      "password": "Passwort",
+      "submit": "Anmelden",
+      "no_account": "Kein Konto?",
+      "link_register": "Registrieren"
+    },
+    "register": {
+      "title": "Registrieren",
+      "username": "Benutzername",
+      "email": "E-Mail",
+      "password": "Passwort",
+      "submit": "Konto erstellen",
+      "has_account": "Bereits ein Konto?",
+      "link_login": "Anmelden"
+    }
+  },
+  "game": {
+    "title": "Finde die Fehler",
+    "btn_submit": "Beenden und Punkte sehen",
+    "btn_correcting": "Korrektur…",
+    "timer_label": "Verbleibende Zeit",
+    "progress": "{applied} Wort{s} geändert · {total} Fehler versteckt",
+    "score_summary": "{correct} / {total} Fehler richtig korrigiert",
+    "sidebar": {
+      "corrections": "Korrekturen",
+      "total_errors": "Fehler gesamt",
+      "how_to_title": "Spielanleitung",
+      "how_to_text": "Klicke auf ein beliebiges Wort, um eine Korrektur vorzuschlagen. Fehler können sein: Konjugation, Rechtschreibung, Übereinstimmung, Homofonien, Interpunktion oder Syntax."
+    },
+    "tooltip": {
+      "invalid": "Ungültiges Wort",
+      "your_answer": "Deine Antwort",
+      "valid": "Gültiges Wort",
+      "correct_word": "Korrektes Wort",
+      "your_edit": "Deine Änderung"
+    },
+    "popup": {
+      "invalid_label": "Angezeigtes ungültiges Wort:",
+      "valid_label": "Gültiges Wort (deine Korrektur):",
+      "placeholder": "Deine Korrektur…",
+      "skip": "Überspringen",
+      "validate": "Bestätigen"
+    },
+    "results": {
+      "btn_replay": "Nochmal spielen",
+      "btn_profile": "Mein Profil ansehen",
+      "detail_title": "Textdetail",
+      "legend": {
+        "title": "Legende",
+        "correct": "Richtig korrigiert",
+        "wrong": "Falsch korrigiert",
+        "missed": "Nicht korrigiert",
+        "valid_touched": "Korrektes Wort geändert"
+      }
+    }
+  },
+  "vs": {
+    "title": "VS-Modus",
+    "description": "Fordere einen Freund in Echtzeit heraus. 120 Sekunden, um so viele Fehler wie möglich zu korrigieren.",
+    "create": {
+      "title": "Raum erstellen",
+      "difficulty_label": "Schwierigkeit",
+      "diff_easy": "Einfach",
+      "diff_medium": "Mittel",
+      "diff_hard": "Schwer",
+      "btn": "Raum erstellen"
+    },
+    "join": {
+      "title": "Einem Raum beitreten",
+      "code_label": "Raumcode",
+      "btn": "Beitreten"
+    },
+    "waiting": {
+      "title": "Warten…",
+      "code_label": "Zu teilender Code",
+      "share_hint": "Teile diesen Code mit deinem Gegner"
+    },
+    "game": {
+      "timer_label": "Sekunden",
+      "hint": "Klicke auf Wörter, um sie zu korrigieren — der Schnellste gewinnt!"
+    },
+    "status": {
+      "connected": "Verbunden — warte auf einen Gegner…",
+      "generating": "Text wird generiert…",
+      "players": "{count}/2 Spieler verbunden…"
+    },
+    "finish": {
+      "btn_replay": "Nochmal spielen",
+      "btn_profile": "Mein Profil ansehen",
+      "stats_title": "Meine Statistiken",
+      "stat_applied": "Angewendete Korrekturen",
+      "stat_valid": "Richtig",
+      "stat_wrong": "Falsch",
+      "stat_missed": "Verpasst",
+      "op_corrections": "angewendete Korrekturen",
+      "report_title": "Mein Bericht",
+      "victory": "Sieg!",
+      "defeat": "Niederlage",
+      "score_summary": "{score}% — {correct} / {total} Fehler richtig korrigiert",
+      "legend": {
+        "title": "Legende",
+        "correct": "Richtig korrigiert",
+        "wrong": "Falsch korrigiert",
+        "missed": "Nicht korrigiert",
+        "valid_touched": "Korrektes Wort geändert"
+      }
+    },
+    "tooltip": {
+      "invalid": "Ungültiges Wort",
+      "your_answer": "Deine Antwort",
+      "valid": "Gültiges Wort",
+      "correct_word": "Korrektes Wort",
+      "your_edit": "Deine Änderung"
+    },
+    "popup": {
+      "invalid_label": "Angezeigtes ungültiges Wort:",
+      "valid_label": "Gültiges Wort (deine Korrektur):",
+      "placeholder": "Deine Korrektur…",
+      "skip": "Überspringen",
+      "validate": "Bestätigen"
+    },
+    "toast": {
+      "no_token": "Melde dich an, um VS zu spielen",
+      "enter_code": "Code eingeben",
+      "connection_lost": "Verbindung getrennt",
+      "opponent_disconnected": "Gegner getrennt — Sieg in 10s…"
+    }
+  },
+  "profile": {
+    "btn_edit": "Profil bearbeiten",
+    "btn_new_game": "Neues Spiel",
+    "member_since": "Mitglied seit {date}",
+    "streak_unit": "T",
+    "no_history": "Keine Spiele gespielt",
+    "saving": "Speichern…",
+    "saved_toast": "Profil aktualisiert!",
+    "diff": {
+      "facile": "Einfach",
+      "moyen": "Mittel",
+      "difficile": "Schwer"
+    },
+    "stats": {
+      "games": "Gespielte Spiele",
+      "avg": "Durchschnittspunktzahl",
+      "streak": "Serie",
+      "best_diff": "Beste Schwierigkeit"
+    },
+    "history": {
+      "title": "Verlauf",
+      "col_date": "Datum",
+      "col_difficulty": "Schwierigkeit",
+      "col_score": "Punkte",
+      "col_corrections": "Korrekturen",
+      "col_duration": "Dauer"
+    },
+    "modal": {
+      "title": "Profil bearbeiten",
+      "username": "Benutzername",
+      "avatar_seed": "Avatar-Seed",
+      "avatar_hint": "Leer lassen, um deinen Benutzernamen zu verwenden",
+      "cancel": "Abbrechen",
+      "save": "Speichern"
+    }
   }
 }

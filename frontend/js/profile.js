@@ -1,5 +1,5 @@
 import { apiGet, apiPut, getToken, getUser, updateUser, logout, showToast, updateNav } from './auth.js';
-import { loadTranslations, applyTranslations, initLangSelector, initTheme } from './i18n.js';
+import { loadTranslations, applyTranslations, initLangSelector, initTheme, t, getLang } from './i18n.js';
 
 updateNav();
 initTheme();
@@ -33,7 +33,7 @@ function renderHeader(me) {
   const avatarUrl = `https://api.dicebear.com/7.x/pixel-art/svg?seed=${encodeURIComponent(me.avatar_seed || me.username)}`;
   document.getElementById('profile-avatar').src = avatarUrl;
   document.getElementById('profile-name').textContent = me.username;
-  document.getElementById('profile-since').textContent = `Membre depuis ${new Date(me.created_at).toLocaleDateString('fr-FR', { year: 'numeric', month: 'long' })}`;
+  document.getElementById('profile-since').textContent = t('profile.member_since', { date: new Date(me.created_at).toLocaleDateString(getLang(), { year: 'numeric', month: 'long' }) });
 }
 
 function renderStats(history) {
@@ -57,7 +57,7 @@ function renderStats(history) {
     if (days.has(d.toDateString())) streak++;
     else if (i > 0) break;
   }
-  document.getElementById('stat-streak').textContent = streak + ' j';
+  document.getElementById('stat-streak').textContent = streak + ' ' + t('profile.streak_unit');
 
   // Best difficulty
   const difficultyScores = {};
@@ -69,7 +69,7 @@ function renderStats(history) {
     .map(([d, scores]) => ({ d, avg: scores.reduce((a, b) => a + b, 0) / scores.length }))
     .sort((a, b) => b.avg - a.avg)[0];
   document.getElementById('stat-best-diff').textContent = bestDiff
-    ? { facile: 'Facile', moyen: 'Moyen', difficile: 'Difficile' }[bestDiff.d] || bestDiff.d
+    ? (t(`profile.diff.${bestDiff.d}`) !== `[profile.diff.${bestDiff.d}]` ? t(`profile.diff.${bestDiff.d}`) : bestDiff.d)
     : '—';
 }
 
@@ -124,17 +124,16 @@ function renderHistory(history) {
   if (!tbody) return;
 
   if (!history.length) {
-    tbody.innerHTML = '<tr><td colspan="5" style="text-align:center;color:var(--text-muted);padding:32px">Aucune partie jouée</td></tr>';
+    tbody.innerHTML = `<tr><td colspan="5" style="text-align:center;color:var(--text-muted);padding:32px">${t('profile.no_history')}</td></tr>`;
     return;
   }
 
   const diffBadge = { facile: 'badge-easy', moyen: 'badge-medium', difficile: 'badge-hard' };
-  const diffLabel = { facile: 'Facile', moyen: 'Moyen', difficile: 'Difficile' };
 
   tbody.innerHTML = history.map(s => `
     <tr>
-      <td>${new Date(s.completed_at).toLocaleDateString('fr-FR')}</td>
-      <td><span class="badge ${diffBadge[s.difficulty] || ''}">${diffLabel[s.difficulty] || s.difficulty}</span></td>
+      <td>${new Date(s.completed_at).toLocaleDateString(getLang())}</td>
+      <td><span class="badge ${diffBadge[s.difficulty] || ''}">${t(`profile.diff.${s.difficulty}`) || s.difficulty}</span></td>
       <td style="font-family:var(--font-display);font-weight:800;color:var(--green)">${s.score !== null ? s.score + '%' : '—'}</td>
       <td>${s.corrections_count} / ${s.total_errors}</td>
       <td style="color:var(--text-dim)">${s.duration_seconds ? Math.floor(s.duration_seconds / 60) + 'min ' + (s.duration_seconds % 60) + 's' : '—'}</td>
@@ -191,7 +190,7 @@ document.getElementById('form-edit-profile')?.addEventListener('submit', async (
 
   const btn = e.target.querySelector('[type="submit"]');
   btn.disabled = true;
-  btn.textContent = 'Enregistrement…';
+  btn.textContent = t('profile.saving');
 
   try {
     const updated = await apiPut('/auth/profile', { username, avatar_seed });
@@ -199,11 +198,11 @@ document.getElementById('form-edit-profile')?.addEventListener('submit', async (
     updateNav();
     renderHeader(updated);
     closeEditModal();
-    showToast('Profil mis à jour !', 'success');
+    showToast(t('profile.saved_toast'), 'success');
   } catch (ex) {
     err.textContent = ex.message;
   } finally {
     btn.disabled = false;
-    btn.textContent = 'Enregistrer';
+    btn.textContent = t('profile.modal.save');
   }
 });

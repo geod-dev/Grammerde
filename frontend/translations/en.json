@@ -1,20 +1,220 @@
 {
   "wikipedia_subdomain": "en",
   "flag_code": "gb",
+  "nav": {
+    "login": "Log in",
+    "register": "Sign up",
+    "logout": "Log out",
+    "back": "← Back",
+    "home": "← Home"
+  },
   "hero": {
     "eyebrow": "Text correction game",
+    "title_html": "Can you<br><span class=\"correct\">find</span> all<br>the <span class=\"strike\">mistakes</span>?",
     "subtitle": "Daily mission: save the English language.",
-    "btn_play": "Play now"
+    "btn_play": "Play now",
+    "btn_vs": "VS Mode ⚔"
   },
   "configurator": {
     "title": "Set up a game",
     "text_size": "Text size",
+    "size": {
+      "short": "Short",
+      "short_desc": "~1 paragraph",
+      "medium": "Medium",
+      "medium_desc": "~2 paragraphs",
+      "long": "Long",
+      "long_desc": "~3 paragraphs"
+    },
     "error_types": "Error types",
-    "launch": "Start game"
+    "types": {
+      "conjugaison": "Conjugation",
+      "accord": "Agreement",
+      "homophone": "Homophones",
+      "orthographe": "Spelling"
+    },
+    "launch": "Start game",
+    "btn_vs": "VS Mode ⚔"
   },
-  "nav": {
-    "login": "Log in",
-    "register": "Sign up",
-    "logout": "Log out"
+  "leaderboard": {
+    "title": "Leaderboard",
+    "filter": {
+      "week": "This week",
+      "month": "This month",
+      "all": "All time"
+    },
+    "col": {
+      "player": "Player",
+      "avg_score": "Avg. score",
+      "games": "Games"
+    }
+  },
+  "footer": "Grammerde © 2026 — To correct is to win.",
+  "modal": {
+    "login": {
+      "title": "Log in",
+      "email": "Email",
+      "password": "Password",
+      "submit": "Log in",
+      "no_account": "No account?",
+      "link_register": "Sign up"
+    },
+    "register": {
+      "title": "Sign up",
+      "username": "Username",
+      "email": "Email",
+      "password": "Password",
+      "submit": "Create account",
+      "has_account": "Already have an account?",
+      "link_login": "Log in"
+    }
+  },
+  "game": {
+    "title": "Find the errors",
+    "btn_submit": "Finish and see score",
+    "btn_correcting": "Correcting…",
+    "timer_label": "Time remaining",
+    "progress": "{applied} word{s} modified · {total} error{s2} hidden",
+    "score_summary": "{correct} / {total} errors correctly fixed",
+    "sidebar": {
+      "corrections": "Corrections",
+      "total_errors": "Total errors",
+      "how_to_title": "How to play",
+      "how_to_text": "Click on any word to propose a correction. Errors can be: conjugation, spelling, agreement, homophones, punctuation or syntax."
+    },
+    "tooltip": {
+      "invalid": "Invalid word",
+      "your_answer": "Your answer",
+      "valid": "Valid word",
+      "correct_word": "Correct word",
+      "your_edit": "Your edit"
+    },
+    "popup": {
+      "invalid_label": "Invalid word displayed:",
+      "valid_label": "Valid word (your correction):",
+      "placeholder": "Your correction…",
+      "skip": "Skip",
+      "validate": "Validate"
+    },
+    "results": {
+      "btn_replay": "Play again",
+      "btn_profile": "View my profile",
+      "detail_title": "Text detail",
+      "legend": {
+        "title": "Legend",
+        "correct": "Correctly corrected",
+        "wrong": "Incorrectly corrected",
+        "missed": "Missed",
+        "valid_touched": "Correct word modified"
+      }
+    }
+  },
+  "vs": {
+    "title": "VS Mode",
+    "description": "Challenge a friend in real time. 120 seconds to correct as many errors as possible.",
+    "create": {
+      "title": "Create a room",
+      "difficulty_label": "Difficulty",
+      "diff_easy": "Easy",
+      "diff_medium": "Medium",
+      "diff_hard": "Hard",
+      "btn": "Create room"
+    },
+    "join": {
+      "title": "Join a room",
+      "code_label": "Room code",
+      "btn": "Join"
+    },
+    "waiting": {
+      "title": "Waiting…",
+      "code_label": "Code to share",
+      "share_hint": "Share this code with your opponent"
+    },
+    "game": {
+      "timer_label": "seconds",
+      "hint": "Click on words to correct them — the fastest wins!"
+    },
+    "status": {
+      "connected": "Connected — waiting for an opponent…",
+      "generating": "Generating text…",
+      "players": "{count}/2 players connected…"
+    },
+    "finish": {
+      "btn_replay": "Play again",
+      "btn_profile": "View my profile",
+      "stats_title": "My statistics",
+      "stat_applied": "Applied corrections",
+      "stat_valid": "Valid",
+      "stat_wrong": "Wrong",
+      "stat_missed": "Missed",
+      "op_corrections": "applied corrections",
+      "report_title": "My report",
+      "victory": "Victory!",
+      "defeat": "Defeat",
+      "score_summary": "{score}% — {correct} / {total} errors correctly fixed",
+      "legend": {
+        "title": "Legend",
+        "correct": "Correctly corrected",
+        "wrong": "Incorrectly corrected",
+        "missed": "Missed",
+        "valid_touched": "Correct word modified"
+      }
+    },
+    "tooltip": {
+      "invalid": "Invalid word",
+      "your_answer": "Your answer",
+      "valid": "Valid word",
+      "correct_word": "Correct word",
+      "your_edit": "Your edit"
+    },
+    "popup": {
+      "invalid_label": "Invalid word displayed:",
+      "valid_label": "Valid word (your correction):",
+      "placeholder": "Your correction…",
+      "skip": "Skip",
+      "validate": "Validate"
+    },
+    "toast": {
+      "no_token": "Log in to play VS mode",
+      "enter_code": "Enter a code",
+      "connection_lost": "Connection lost",
+      "opponent_disconnected": "Opponent disconnected — victory in 10s…"
+    }
+  },
+  "profile": {
+    "btn_edit": "Edit profile",
+    "btn_new_game": "New game",
+    "member_since": "Member since {date}",
+    "streak_unit": "d",
+    "no_history": "No games played",
+    "saving": "Saving…",
+    "saved_toast": "Profile updated!",
+    "diff": {
+      "facile": "Easy",
+      "moyen": "Medium",
+      "difficile": "Hard"
+    },
+    "stats": {
+      "games": "Games played",
+      "avg": "Average score",
+      "streak": "Streak",
+      "best_diff": "Best difficulty"
+    },
+    "history": {
+      "title": "History",
+      "col_date": "Date",
+      "col_difficulty": "Difficulty",
+      "col_score": "Score",
+      "col_corrections": "Corrections",
+      "col_duration": "Duration"
+    },
+    "modal": {
+      "title": "Edit profile",
+      "username": "Username",
+      "avatar_seed": "Avatar seed",
+      "avatar_hint": "Leave empty to use your username",
+      "cancel": "Cancel",
+      "save": "Save"
+    }
   }
 }

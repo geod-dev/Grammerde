@@ -44,39 +44,39 @@
     <a href="/profile.html" class="btn btn-ghost hidden" id="user-menu">
       <span id="nav-username"></span>
     </a>
-    <a href="/" class="btn btn-ghost">← Retour</a>
-    <button class="btn btn-ghost hidden" id="btn-logout">Déconnexion</button>
+    <a href="/" class="btn btn-ghost" data-i18n="nav.back">← Retour</a>
+    <button class="btn btn-ghost hidden" id="btn-logout" data-i18n="nav.logout">Déconnexion</button>
   </div>
 </nav>
 
 <!-- Setup View -->
 <div id="view-setup">
   <div class="vs-setup">
-    <h1 class="vs-title">Mode <span class="vs-sep">VS</span></h1>
-    <p style="color:var(--text-dim);margin-bottom:8px">
+    <h1 class="vs-title"><span data-i18n="vs.title">Mode VS</span></h1>
+    <p style="color:var(--text-dim);margin-bottom:8px" data-i18n="vs.description">
       Affrontez un ami en temps réel. 120 secondes pour corriger un maximum de fautes.
     </p>
 
     <div class="vs-options">
       <!-- Create room -->
       <div class="card" style="text-align:left">
-        <div class="card-title">Créer une room</div>
+        <div class="card-title" data-i18n="vs.create.title">Créer une room</div>
         <div class="form-group" style="margin-bottom:16px">
-          <label class="form-label">Difficulté</label>
+          <label class="form-label" data-i18n="vs.create.difficulty_label">Difficulté</label>
           <select id="create-difficulty" class="form-input" style="cursor:pointer">
-            <option value="facile">Facile</option>
-            <option value="moyen" selected>Moyen</option>
-            <option value="difficile">Difficile</option>
+            <option value="facile" data-i18n="vs.create.diff_easy">Facile</option>
+            <option value="moyen" selected data-i18n="vs.create.diff_medium">Moyen</option>
+            <option value="difficile" data-i18n="vs.create.diff_hard">Difficile</option>
           </select>
         </div>
-        <button class="btn btn-primary" style="width:100%" id="btn-create-room">Créer la room</button>
+        <button class="btn btn-primary" style="width:100%" id="btn-create-room" data-i18n="vs.create.btn">Créer la room</button>
       </div>
 
       <!-- Join room -->
       <div class="card" style="text-align:left">
-        <div class="card-title">Rejoindre une room</div>
+        <div class="card-title" data-i18n="vs.join.title">Rejoindre une room</div>
         <div class="form-group" style="margin-bottom:16px">
-          <label class="form-label">Code de la room</label>
+          <label class="form-label" data-i18n="vs.join.code_label">Code de la room</label>
           <input
             id="join-code"
             type="text"
@@ -86,7 +86,7 @@
             style="text-transform:uppercase;letter-spacing:0.1em;font-size:18px;text-align:center"
           >
         </div>
-        <button class="btn btn-outline" style="width:100%" id="btn-join-room">Rejoindre</button>
+        <button class="btn btn-outline" style="width:100%" id="btn-join-room" data-i18n="vs.join.btn">Rejoindre</button>
       </div>
     </div>
   </div>
@@ -95,13 +95,13 @@
 <!-- Waiting View -->
 <div id="view-waiting" class="hidden">
   <div class="vs-setup">
-    <h1 class="vs-title">En attente…</h1>
+    <h1 class="vs-title" data-i18n="vs.waiting.title">En attente…</h1>
     <p style="color:var(--text-dim);margin-bottom:24px" id="waiting-status">Connexion…</p>
 
     <div class="card" id="waiting-code-card">
-      <div class="config-label">Code à partager</div>
+      <div class="config-label" data-i18n="vs.waiting.code_label">Code à partager</div>
       <div class="room-code-display" id="display-code">——</div>
-      <p style="font-size:13px;color:var(--text-dim)">Partagez ce code à votre adversaire</p>
+      <p style="font-size:13px;color:var(--text-dim)" data-i18n="vs.waiting.share_hint">Partagez ce code à votre adversaire</p>
     </div>
   </div>
 </div>
@@ -121,7 +121,7 @@
 
       <div class="vs-center">
         <div class="timer-value" id="vs-timer">120</div>
-        <div class="timer-label">secondes</div>
+        <div class="timer-label" data-i18n="vs.game.timer_label">secondes</div>
       </div>
 
       <div class="vs-player opponent" style="justify-content:flex-end">
@@ -137,7 +137,7 @@
       Chargement…
     </div>
 
-    <div style="text-align:center;font-size:12px;color:var(--text-dim)">
+    <div style="text-align:center;font-size:12px;color:var(--text-dim)" data-i18n="vs.game.hint">
       Cliquez sur les mots pour les corriger — le plus rapide gagne !
     </div>
   </div>
@@ -152,42 +152,42 @@
     </div>
 
     <div style="display:flex;gap:12px;justify-content:center;margin-bottom:40px">
-      <button class="btn btn-primary btn-lg" id="btn-play-again">Rejouer</button>
-      <a href="/profile.html" class="btn btn-outline btn-lg">Voir mon profil</a>
+      <button class="btn btn-primary btn-lg" id="btn-play-again" data-i18n="vs.finish.btn_replay">Rejouer</button>
+      <a href="/profile.html" class="btn btn-outline btn-lg" data-i18n="vs.finish.btn_profile">Voir mon profil</a>
     </div>
 
-    <h2 style="font-family:var(--font-display);font-size:1.3rem;font-weight:700;margin-bottom:16px">Mes statistiques</h2>
+    <h2 style="font-family:var(--font-display);font-size:1.3rem;font-weight:700;margin-bottom:16px" data-i18n="vs.finish.stats_title">Mes statistiques</h2>
     <div class="stats-grid" style="margin-bottom:24px">
       <div class="stat-card">
         <div class="stat-card-value" id="finish-stat-applied">—</div>
-        <div class="stat-card-label">Corrections appliquées</div>
+        <div class="stat-card-label" data-i18n="vs.finish.stat_applied">Corrections appliquées</div>
       </div>
       <div class="stat-card">
         <div class="stat-card-value" style="color:var(--green)" id="finish-stat-valid">—</div>
-        <div class="stat-card-label">Valides</div>
+        <div class="stat-card-label" data-i18n="vs.finish.stat_valid">Valides</div>
       </div>
       <div class="stat-card">
         <div class="stat-card-value" style="color:var(--orange)" id="finish-stat-wrong">—</div>
-        <div class="stat-card-label">Fausses</div>
+        <div class="stat-card-label" data-i18n="vs.finish.stat_wrong">Fausses</div>
       </div>
       <div class="stat-card">
         <div class="stat-card-value" style="color:var(--red)" id="finish-stat-missed">—</div>
-        <div class="stat-card-label">Oubliées</div>
+        <div class="stat-card-label" data-i18n="vs.finish.stat_missed">Oubliées</div>
       </div>
     </div>
 
     <div class="sidebar-card" style="margin-bottom:32px;text-align:center;font-size:14px;color:var(--text-dim)">
       <span id="finish-op-name" style="color:var(--text);font-weight:600">Adversaire</span>
-      — <span id="finish-op-applied">—</span> corrections appliquées
+      — <span id="finish-op-applied">—</span> <span data-i18n="vs.finish.op_corrections">corrections appliquées</span>
     </div>
 
-    <h2 style="font-family:var(--font-display);font-size:1.3rem;font-weight:700;margin-bottom:16px">Mon compte rendu</h2>
+    <h2 style="font-family:var(--font-display);font-size:1.3rem;font-weight:700;margin-bottom:16px" data-i18n="vs.finish.report_title">Mon compte rendu</h2>
     <div class="results-legend">
-      <span class="results-legend-title">Légende</span>
-      <span class="result-badge badge-result-green">Correctement corrigé</span>
-      <span class="result-badge badge-result-orange">Mal corrigé</span>
-      <span class="result-badge badge-result-red">Non corrigé</span>
-      <span class="result-badge badge-result-blue">Mot juste modifié</span>
+      <span class="results-legend-title" data-i18n="vs.finish.legend.title">Légende</span>
+      <span class="result-badge badge-result-green" data-i18n="vs.finish.legend.correct">Correctement corrigé</span>
+      <span class="result-badge badge-result-orange" data-i18n="vs.finish.legend.wrong">Mal corrigé</span>
+      <span class="result-badge badge-result-red" data-i18n="vs.finish.legend.missed">Non corrigé</span>
+      <span class="result-badge badge-result-blue" data-i18n="vs.finish.legend.valid_touched">Mot juste modifié</span>
     </div>
     <div class="text-display" id="vs-results-text"></div>
   </div>
@@ -196,20 +196,21 @@
 <!-- VS Correction Popup -->
 <div id="vs-popup" class="popup-overlay hidden">
   <div class="popup">
-    <div class="popup-label">Mot invalide affiché :</div>
+    <div class="popup-label" data-i18n="vs.popup.invalid_label">Mot invalide affiché :</div>
     <div class="popup-word" id="vs-popup-word"></div>
-    <div class="popup-label" style="margin-top:12px">Mot valide (votre correction) :</div>
+    <div class="popup-label" style="margin-top:12px" data-i18n="vs.popup.valid_label">Mot valide (votre correction) :</div>
     <input
       type="text"
       class="popup-input"
       id="vs-popup-input"
+      data-i18n-ph="vs.popup.placeholder"
       placeholder="Votre correction…"
       autocomplete="off"
       spellcheck="false"
     >
     <div class="popup-actions">
-      <button class="btn btn-ghost" id="btn-vs-skip">Passer</button>
-      <button class="btn btn-green" id="btn-vs-validate">Valider</button>
+      <button class="btn btn-ghost" id="btn-vs-skip" data-i18n="vs.popup.skip">Passer</button>
+      <button class="btn btn-green" id="btn-vs-validate" data-i18n="vs.popup.validate">Valider</button>
     </div>
   </div>
 </div>

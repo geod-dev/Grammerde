@@ -15,22 +15,43 @@ export function setLang(code) {
   localStorage.setItem("lang", code);
 }
 
+let _tr = null;
+
 export async function loadTranslations(lang = getLang()) {
   try {
     const res = await fetch(`/translations/${lang}.json`);
     if (!res.ok) throw new Error();
-    return await res.json();
+    _tr = await res.json();
+    return _tr;
   } catch {
     if (lang !== "fr") return loadTranslations("fr");
+    _tr = null;
     return null;
   }
 }
 
-export function applyTranslations(t) {
-  if (!t) return;
+// Resolve a dot-separated key with optional {var} substitutions
+export function t(key, vars = {}) {
+  const value = _tr ? key.split(".").reduce((o, k) => o?.[k], _tr) : null;
+  if (value == null) return `[${key}]`;
+  return Object.entries(vars).reduce((s, [k, v]) => s.replace(`{${k}}`, v), value);
+}
+
+export function applyTranslations(tr) {
   document.querySelectorAll("[data-i18n]").forEach((el) => {
-    const value = el.dataset.i18n.split(".").reduce((o, k) => o?.[k], t);
-    if (value != null) el.textContent = value;
+    const key = el.dataset.i18n;
+    const value = tr ? key.split(".").reduce((o, k) => o?.[k], tr) : null;
+    el.textContent = value != null ? value : `[${key}]`;
+  });
+  document.querySelectorAll("[data-i18n-ph]").forEach((el) => {
+    const key = el.dataset.i18nPh;
+    const value = tr ? key.split(".").reduce((o, k) => o?.[k], tr) : null;
+    el.placeholder = value != null ? value : `[${key}]`;
+  });
+  document.querySelectorAll("[data-i18n-html]").forEach((el) => {
+    const key = el.dataset.i18nHtml;
+    const value = tr ? key.split(".").reduce((o, k) => o?.[k], tr) : null;
+    el.innerHTML = value != null ? value : `[${key}]`;
   });
 }
 

@@ -1,20 +1,220 @@
 {
   "wikipedia_subdomain": "ar",
   "flag_code": "ar",
+  "nav": {
+    "login": "تسجيل الدخول",
+    "register": "التسجيل",
+    "logout": "تسجيل الخروج",
+    "back": "→ رجوع",
+    "home": "→ الرئيسية"
+  },
   "hero": {
     "eyebrow": "لعبة تصحيح النصوص",
+    "title_html": "هل ستتمكن من<br><span class=\"correct\">إيجاد</span> كل<br><span class=\"strike\">الأخطاء</span>؟",
     "subtitle": "مهمة اليوم: إنقاذ اللغة العربية.",
-    "btn_play": "العب الآن"
+    "btn_play": "العب الآن",
+    "btn_vs": "وضع المواجهة ⚔"
   },
   "configurator": {
     "title": "إعداد اللعبة",
     "text_size": "حجم النص",
+    "size": {
+      "short": "قصير",
+      "short_desc": "~فقرة واحدة",
+      "medium": "متوسط",
+      "medium_desc": "~فقرتان",
+      "long": "طويل",
+      "long_desc": "~3 فقرات"
+    },
     "error_types": "أنواع الأخطاء",
-    "launch": "ابدأ اللعبة"
+    "types": {
+      "conjugaison": "التصريف",
+      "accord": "التطابق",
+      "homophone": "المتجانسات",
+      "orthographe": "الإملاء"
+    },
+    "launch": "ابدأ اللعبة",
+    "btn_vs": "وضع المواجهة ⚔"
   },
-  "nav": {
-    "login": "تسجيل الدخول",
-    "register": "التسجيل",
-    "logout": "تسجيل الخروج"
+  "leaderboard": {
+    "title": "لوحة المتصدرين",
+    "filter": {
+      "week": "هذا الأسبوع",
+      "month": "هذا الشهر",
+      "all": "كل الأوقات"
+    },
+    "col": {
+      "player": "اللاعب",
+      "avg_score": "متوسط النقاط",
+      "games": "الألعاب"
+    }
+  },
+  "footer": "Grammerde © 2026 — التصحيح هو الفوز.",
+  "modal": {
+    "login": {
+      "title": "تسجيل الدخول",
+      "email": "البريد الإلكتروني",
+      "password": "كلمة المرور",
+      "submit": "تسجيل الدخول",
+      "no_account": "ليس لديك حساب؟",
+      "link_register": "التسجيل"
+    },
+    "register": {
+      "title": "التسجيل",
+      "username": "اسم المستخدم",
+      "email": "البريد الإلكتروني",
+      "password": "كلمة المرور",
+      "submit": "إنشاء حساب",
+      "has_account": "لديك حساب بالفعل؟",
+      "link_login": "تسجيل الدخول"
+    }
+  },
+  "game": {
+    "title": "ابحث عن الأخطاء",
+    "btn_submit": "إنهاء ورؤية النتيجة",
+    "btn_correcting": "تصحيح…",
+    "timer_label": "الوقت المتبقي",
+    "progress": "{applied} كلمة معدّلة · {total} خطأ مخفي",
+    "score_summary": "{correct} / {total} أخطاء تم تصحيحها بشكل صحيح",
+    "sidebar": {
+      "corrections": "التصحيحات",
+      "total_errors": "إجمالي الأخطاء",
+      "how_to_title": "كيفية اللعب",
+      "how_to_text": "انقر على أي كلمة لاقتراح تصحيح. يمكن أن تكون الأخطاء: تصريف، إملاء، تطابق، متجانسات، علامات ترقيم أو نحو."
+    },
+    "tooltip": {
+      "invalid": "كلمة خاطئة",
+      "your_answer": "إجابتك",
+      "valid": "كلمة صحيحة",
+      "correct_word": "الكلمة الصحيحة",
+      "your_edit": "تعديلك"
+    },
+    "popup": {
+      "invalid_label": "الكلمة الخاطئة المعروضة:",
+      "valid_label": "الكلمة الصحيحة (تصحيحك):",
+      "placeholder": "تصحيحك…",
+      "skip": "تخطي",
+      "validate": "تأكيد"
+    },
+    "results": {
+      "btn_replay": "العب مجدداً",
+      "btn_profile": "عرض ملفي",
+      "detail_title": "تفاصيل النص",
+      "legend": {
+        "title": "الدلالة",
+        "correct": "تم التصحيح بشكل صحيح",
+        "wrong": "تم التصحيح بشكل خاطئ",
+        "missed": "لم يتم التصحيح",
+        "valid_touched": "كلمة صحيحة تم تعديلها"
+      }
+    }
+  },
+  "vs": {
+    "title": "وضع المواجهة",
+    "description": "تحدَّ صديقاً في الوقت الفعلي. 120 ثانية لتصحيح أكبر عدد من الأخطاء.",
+    "create": {
+      "title": "إنشاء غرفة",
+      "difficulty_label": "المستوى",
+      "diff_easy": "سهل",
+      "diff_medium": "متوسط",
+      "diff_hard": "صعب",
+      "btn": "إنشاء الغرفة"
+    },
+    "join": {
+      "title": "الانضمام إلى غرفة",
+      "code_label": "رمز الغرفة",
+      "btn": "انضم"
+    },
+    "waiting": {
+      "title": "في الانتظار…",
+      "code_label": "الرمز للمشاركة",
+      "share_hint": "شارك هذا الرمز مع خصمك"
+    },
+    "game": {
+      "timer_label": "ثانية",
+      "hint": "انقر على الكلمات لتصحيحها — الأسرع يفوز!"
+    },
+    "status": {
+      "connected": "متصل — في انتظار خصم…",
+      "generating": "جارٍ توليد النص…",
+      "players": "{count}/2 لاعبين متصلين…"
+    },
+    "finish": {
+      "btn_replay": "العب مجدداً",
+      "btn_profile": "عرض ملفي",
+      "stats_title": "إحصائياتي",
+      "stat_applied": "التصحيحات المطبقة",
+      "stat_valid": "صحيحة",
+      "stat_wrong": "خاطئة",
+      "stat_missed": "فائتة",
+      "op_corrections": "تصحيحات مطبقة",
+      "report_title": "تقريري",
+      "victory": "فوز!",
+      "defeat": "هزيمة",
+      "score_summary": "{score}% — {correct} / {total} أخطاء تم تصحيحها بشكل صحيح",
+      "legend": {
+        "title": "الدلالة",
+        "correct": "تم التصحيح بشكل صحيح",
+        "wrong": "تم التصحيح بشكل خاطئ",
+        "missed": "لم يتم التصحيح",
+        "valid_touched": "كلمة صحيحة تم تعديلها"
+      }
+    },
+    "tooltip": {
+      "invalid": "كلمة خاطئة",
+      "your_answer": "إجابتك",
+      "valid": "كلمة صحيحة",
+      "correct_word": "الكلمة الصحيحة",
+      "your_edit": "تعديلك"
+    },
+    "popup": {
+      "invalid_label": "الكلمة الخاطئة المعروضة:",
+      "valid_label": "الكلمة الصحيحة (تصحيحك):",
+      "placeholder": "تصحيحك…",
+      "skip": "تخطي",
+      "validate": "تأكيد"
+    },
+    "toast": {
+      "no_token": "سجّل الدخول للعب في وضع المواجهة",
+      "enter_code": "أدخل رمزاً",
+      "connection_lost": "انقطع الاتصال",
+      "opponent_disconnected": "انقطع اتصال الخصم — فوز خلال 10 ثوانٍ…"
+    }
+  },
+  "profile": {
+    "btn_edit": "تعديل الملف الشخصي",
+    "btn_new_game": "لعبة جديدة",
+    "member_since": "عضو منذ {date}",
+    "streak_unit": "ي",
+    "no_history": "لا توجد ألعاب",
+    "saving": "جارٍ الحفظ…",
+    "saved_toast": "تم تحديث الملف الشخصي!",
+    "diff": {
+      "facile": "سهل",
+      "moyen": "متوسط",
+      "difficile": "صعب"
+    },
+    "stats": {
+      "games": "الألعاب المُلعبة",
+      "avg": "متوسط النقاط",
+      "streak": "السلسلة",
+      "best_diff": "أفضل مستوى"
+    },
+    "history": {
+      "title": "السجل",
+      "col_date": "التاريخ",
+      "col_difficulty": "المستوى",
+      "col_score": "النقاط",
+      "col_corrections": "التصحيحات",
+      "col_duration": "المدة"
+    },
+    "modal": {
+      "title": "تعديل الملف الشخصي",
+      "username": "اسم المستخدم",
+      "avatar_seed": "بذرة الصورة الرمزية",
+      "avatar_hint": "اتركه فارغاً لاستخدام اسم المستخدم",
+      "cancel": "إلغاء",
+      "save": "حفظ"
+    }
   }
 }

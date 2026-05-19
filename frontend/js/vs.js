@@ -1,5 +1,5 @@
 import { apiPost, getToken, getUser, showToast, updateNav } from './auth.js';
-import { loadTranslations, applyTranslations, initLangSelector, initTheme } from './i18n.js';
+import { loadTranslations, applyTranslations, initLangSelector, initTheme, t } from './i18n.js';
 
 updateNav();
 initTheme();
@@ -7,8 +7,10 @@ initLangSelector();
 loadTranslations().then(applyTranslations);
 
 if (!getToken()) {
-  showToast('Connectez-vous pour jouer en VS', 'error');
-  setTimeout(() => window.location.href = '/', 1500);
+  loadTranslations().then(() => {
+    showToast(t('vs.toast.no_token'), 'error');
+    setTimeout(() => window.location.href = '/', 1500);
+  });
 }
 
 const user = getUser();
@@ -49,7 +51,7 @@ document.getElementById('btn-create-room')?.addEventListener('click', async () =
 
 document.getElementById('btn-join-room')?.addEventListener('click', async () => {
   const code = document.getElementById('join-code')?.value.trim().toUpperCase();
-  if (!code) return showToast('Entrez un code', 'error');
+  if (!code) return showToast(t('vs.toast.enter_code'), 'error');
   try {
     await apiPost('/vs/join', { room_code: code });
     roomCode = code;
@@ -68,11 +70,11 @@ function connectWS(code) {
 
   ws.onopen = () => {
     ws.send(JSON.stringify({ type: 'join_room', room_code: code, user_id: user.id, username: user.username }));
-    document.getElementById('waiting-status').textContent = "Connecté — en attente d'un adversaire…";
+    document.getElementById('waiting-status').textContent = t('vs.status.connected');
   };
 
   ws.onmessage = (e) => handleMessage(JSON.parse(e.data));
-  ws.onclose = () => { if (!gameStarted) showToast('Connexion perdue', 'error'); };
+  ws.onclose = () => { if (!gameStarted) showToast(t('vs.toast.connection_lost'), 'error'); };
 }
 
 function handleMessage(msg) {
@@ -80,9 +82,9 @@ function handleMessage(msg) {
     case 'player_joined':
       if (msg.player_count === 2) {
         document.getElementById('waiting-code-card')?.classList.add('hidden');
-        document.getElementById('waiting-status').textContent = 'Génération du texte en cours…';
+        document.getElementById('waiting-status').textContent = t('vs.status.generating');
       } else {
-        document.getElementById('waiting-status').textContent = `${msg.player_count}/2 joueur(s) connecté(s)…`;
+        document.getElementById('waiting-status').textContent = t('vs.status.players', { count: msg.player_count });
       }
       break;
 
@@ -102,7 +104,7 @@ function handleMessage(msg) {
       break;
 
     case 'opponent_disconnected':
-      showToast('Adversaire déconnecté — victoire dans 10s…', 'success');
+      showToast(t('vs.toast.opponent_disconnected'), 'success');
       break;
 
     case 'game_over':
@@ -215,7 +217,7 @@ function showGameOver(msg) {
 
   const isWinner = String(msg.winner_id) === String(user.id);
   const titleEl = document.getElementById('finish-title');
-  titleEl.textContent = isWinner ? 'Victoire !' : 'Défaite';
+  titleEl.textContent = isWinner ? t('vs.finish.victory') : t('vs.finish.defeat');
   titleEl.style.color = isWinner ? 'var(--green)' : 'var(--red)';
 
   const opId = Object.keys(msg.scores).find(id => id != user.id);
@@ -239,7 +241,7 @@ function renderVsResults(opponentCount) {
   const applied = vsCorrections.length;
   const score = vsErrors.length ? Math.round((valid / vsErrors.length) * 100) : 0;
 
-  document.getElementById('finish-my-score').textContent = `${score}% — ${valid} / ${vsErrors.length} fautes corrigées correctement`;
+  document.getElementById('finish-my-score').textContent = t('vs.finish.score_summary', { score, correct: valid, total: vsErrors.length });
   document.getElementById('finish-stat-applied').textContent = applied;
   document.getElementById('finish-stat-valid').textContent = valid;
   document.getElementById('finish-stat-wrong').textContent = wrong;
@@ -274,13 +276,13 @@ function renderVsResults(opponentCount) {
       else if (normalizeStr(userAnswer) === normalizeStr(detail.original_valid)) { cls = 'badge-result-green';  display = userAnswer; }
       else                                                                   { cls = 'badge-result-orange'; display = userAnswer; }
 
-      const tip = `<span class="tooltip-row"><span class="tooltip-label">Mot invalide</span><span>${escapeHtml(detail.displayed_invalid)}</span></span><span class="tooltip-row"><span class="tooltip-label">Votre réponse</span><span>${escapeHtml(userAnswer || '—')}</span></span><span class="tooltip-row"><span class="tooltip-label">Mot valide</span><span>${escapeHtml(detail.original_valid)}</span></span><span class="tooltip-divider"></span><span class="tooltip-row"><span class="tooltip-label">${escapeHtml(detail.error_type)}</span><span>${escapeHtml(detail.explanation || '')}</span></span>`;
+      const tip = `<span class="tooltip-row"><span class="tooltip-label">${t('vs.tooltip.invalid')}</span><span>${escapeHtml(detail.displayed_invalid)}</span></span><span class="tooltip-row"><span class="tooltip-label">${t('vs.tooltip.your_answer')}</span><span>${escapeHtml(userAnswer || '—')}</span></span><span class="tooltip-row"><span class="tooltip-label">${t('vs.tooltip.valid')}</span><span>${escapeHtml(detail.original_valid)}</span></span><span class="tooltip-divider"></span><span class="tooltip-row"><span class="tooltip-label">${escapeHtml(detail.error_type)}</span><span>${escapeHtml(detail.explanation || '')}</span></span>`;
       return `<span class="result-badge ${cls}">${escapeHtml(display)}<span class="result-tooltip">${tip}</span></span>`;
     }
 
     if (touchedCorrectSet.has(currentIdx)) {
       const c = vsCorrections.find(x => parseInt(x.idx) === currentIdx);
-      const tip = `<span class="tooltip-row"><span class="tooltip-label">Mot correct</span><span>${escapeHtml(seg)}</span></span><span class="tooltip-row"><span class="tooltip-label">Votre modification</span><span>${escapeHtml(c?.correction || '—')}</span></span>`;
+      const tip = `<span class="tooltip-row"><span class="tooltip-label">${t('vs.tooltip.correct_word')}</span><span>${escapeHtml(seg)}</span></span><span class="tooltip-row"><span class="tooltip-label">${t('vs.tooltip.your_edit')}</span><span>${escapeHtml(c?.correction || '—')}</span></span>`;
       return `<span class="result-badge badge-result-blue">${escapeHtml(c?.correction || seg)}<span class="result-tooltip">${tip}</span></span>`;
     }
 

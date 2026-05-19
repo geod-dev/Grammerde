@@ -1,20 +1,220 @@
 {
   "wikipedia_subdomain": "fr",
   "flag_code": "fr",
+  "nav": {
+    "login": "Connexion",
+    "register": "Inscription",
+    "logout": "Déconnexion",
+    "back": "← Retour",
+    "home": "← Accueil"
+  },
   "hero": {
     "eyebrow": "Jeu de correction de texte",
+    "title_html": "Sauras-tu<br><span class=\"correct\">trouver</span> toutes<br>les <span class=\"strike\">fautes</span> ?",
     "subtitle": "Mission du jour : sauver la langue française.",
-    "btn_play": "Jouer maintenant"
+    "btn_play": "Jouer maintenant",
+    "btn_vs": "Mode VS ⚔"
   },
   "configurator": {
     "title": "Configurer une partie",
     "text_size": "Taille du texte",
+    "size": {
+      "short": "Court",
+      "short_desc": "~1 paragraphe",
+      "medium": "Moyen",
+      "medium_desc": "~2 paragraphes",
+      "long": "Long",
+      "long_desc": "~3 paragraphes"
+    },
     "error_types": "Types de fautes",
-    "launch": "Lancer la partie"
+    "types": {
+      "conjugaison": "Conjugaison",
+      "accord": "Accords",
+      "homophone": "Homophones",
+      "orthographe": "Orthographe"
+    },
+    "launch": "Lancer la partie",
+    "btn_vs": "Mode VS ⚔"
   },
-  "nav": {
-    "login": "Connexion",
-    "register": "Inscription",
-    "logout": "Déconnexion"
+  "leaderboard": {
+    "title": "Classement",
+    "filter": {
+      "week": "Cette semaine",
+      "month": "Ce mois",
+      "all": "Tout temps"
+    },
+    "col": {
+      "player": "Joueur",
+      "avg_score": "Score moy.",
+      "games": "Parties"
+    }
+  },
+  "footer": "Grammerde © 2026 — Corriger, c'est gagner.",
+  "modal": {
+    "login": {
+      "title": "Connexion",
+      "email": "Email",
+      "password": "Mot de passe",
+      "submit": "Se connecter",
+      "no_account": "Pas de compte ?",
+      "link_register": "S'inscrire"
+    },
+    "register": {
+      "title": "Inscription",
+      "username": "Pseudo",
+      "email": "Email",
+      "password": "Mot de passe",
+      "submit": "Créer mon compte",
+      "has_account": "Déjà un compte ?",
+      "link_login": "Se connecter"
+    }
+  },
+  "game": {
+    "title": "Trouve les fautes",
+    "btn_submit": "Terminer et voir le score",
+    "btn_correcting": "Correction…",
+    "timer_label": "Temps restant",
+    "progress": "{applied} mot{s} modifié{s} · {total} faute{s2} cachée{s2}",
+    "score_summary": "{correct} / {total} fautes corrigées correctement",
+    "sidebar": {
+      "corrections": "Corrections",
+      "total_errors": "Total fautes",
+      "how_to_title": "Comment jouer",
+      "how_to_text": "Cliquez sur n'importe quel mot pour proposer une correction. Les fautes peuvent être : conjugaison, orthographe, accords, homophones, ponctuation ou syntaxe."
+    },
+    "tooltip": {
+      "invalid": "Mot invalide",
+      "your_answer": "Votre réponse",
+      "valid": "Mot valide",
+      "correct_word": "Mot correct",
+      "your_edit": "Votre modification"
+    },
+    "popup": {
+      "invalid_label": "Mot invalide affiché :",
+      "valid_label": "Mot valide (votre correction) :",
+      "placeholder": "Votre correction…",
+      "skip": "Passer",
+      "validate": "Valider"
+    },
+    "results": {
+      "btn_replay": "Rejouer",
+      "btn_profile": "Voir mon profil",
+      "detail_title": "Détail du texte",
+      "legend": {
+        "title": "Légende",
+        "correct": "Correctement corrigé",
+        "wrong": "Mal corrigé",
+        "missed": "Non corrigé",
+        "valid_touched": "Mot juste modifié"
+      }
+    }
+  },
+  "vs": {
+    "title": "Mode VS",
+    "description": "Affrontez un ami en temps réel. 120 secondes pour corriger un maximum de fautes.",
+    "create": {
+      "title": "Créer une room",
+      "difficulty_label": "Difficulté",
+      "diff_easy": "Facile",
+      "diff_medium": "Moyen",
+      "diff_hard": "Difficile",
+      "btn": "Créer la room"
+    },
+    "join": {
+      "title": "Rejoindre une room",
+      "code_label": "Code de la room",
+      "btn": "Rejoindre"
+    },
+    "waiting": {
+      "title": "En attente…",
+      "code_label": "Code à partager",
+      "share_hint": "Partagez ce code à votre adversaire"
+    },
+    "status": {
+      "connected": "Connecté — en attente d'un adversaire…",
+      "generating": "Génération du texte en cours…",
+      "players": "{count}/2 joueurs connectés…"
+    },
+    "game": {
+      "timer_label": "secondes",
+      "hint": "Cliquez sur les mots pour les corriger — le plus rapide gagne !"
+    },
+    "finish": {
+      "btn_replay": "Rejouer",
+      "btn_profile": "Voir mon profil",
+      "stats_title": "Mes statistiques",
+      "stat_applied": "Corrections appliquées",
+      "stat_valid": "Valides",
+      "stat_wrong": "Fausses",
+      "stat_missed": "Oubliées",
+      "op_corrections": "corrections appliquées",
+      "report_title": "Mon compte rendu",
+      "victory": "Victoire !",
+      "defeat": "Défaite",
+      "score_summary": "{score}% — {correct} / {total} fautes corrigées correctement",
+      "legend": {
+        "title": "Légende",
+        "correct": "Correctement corrigé",
+        "wrong": "Mal corrigé",
+        "missed": "Non corrigé",
+        "valid_touched": "Mot juste modifié"
+      }
+    },
+    "tooltip": {
+      "invalid": "Mot invalide",
+      "your_answer": "Votre réponse",
+      "valid": "Mot valide",
+      "correct_word": "Mot correct",
+      "your_edit": "Votre modification"
+    },
+    "popup": {
+      "invalid_label": "Mot invalide affiché :",
+      "valid_label": "Mot valide (votre correction) :",
+      "placeholder": "Votre correction…",
+      "skip": "Passer",
+      "validate": "Valider"
+    },
+    "toast": {
+      "no_token": "Connectez-vous pour jouer en VS",
+      "enter_code": "Entrez un code",
+      "connection_lost": "Connexion perdue",
+      "opponent_disconnected": "Adversaire déconnecté — victoire dans 10s…"
+    }
+  },
+  "profile": {
+    "btn_edit": "Modifier le profil",
+    "btn_new_game": "Nouvelle partie",
+    "member_since": "Membre depuis {date}",
+    "streak_unit": "j",
+    "no_history": "Aucune partie jouée",
+    "saving": "Enregistrement…",
+    "saved_toast": "Profil mis à jour !",
+    "diff": {
+      "facile": "Facile",
+      "moyen": "Moyen",
+      "difficile": "Difficile"
+    },
+    "stats": {
+      "games": "Parties jouées",
+      "avg": "Score moyen",
+      "streak": "Streak",
+      "best_diff": "Meilleure difficulté"
+    },
+    "history": {
+      "title": "Historique",
+      "col_date": "Date",
+      "col_difficulty": "Difficulté",
+      "col_score": "Score",
+      "col_corrections": "Corrections",
+      "col_duration": "Durée"
+    },
+    "modal": {
+      "title": "Modifier le profil",
+      "username": "Pseudo",
+      "avatar_seed": "Graine d'avatar",
+      "avatar_hint": "Laissez vide pour utiliser votre pseudo",
+      "cancel": "Annuler",
+      "save": "Enregistrer"
+    }
   }
 }

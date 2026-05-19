@@ -1,5 +1,5 @@
 import { apiPost, showToast, updateNav } from './auth.js';
-import { loadTranslations, applyTranslations, initLangSelector, initTheme } from './i18n.js';
+import { loadTranslations, applyTranslations, initLangSelector, initTheme, t } from './i18n.js';
 
 updateNav();
 initTheme();
@@ -137,7 +137,7 @@ function updateProgress() {
   const done = Math.min(corrections.length, total);
   const pct = total ? (done / total) * 100 : 0;
   document.getElementById('progress-fill').style.width = Math.min(pct, 100) + '%';
-  document.getElementById('progress-label').textContent = `${corrections.length} mot${corrections.length > 1 ? 's' : ''} modifié${corrections.length > 1 ? 's' : ''} · ${total} faute${total > 1 ? 's' : ''} cachée${total > 1 ? 's' : ''}`;
+  document.getElementById('progress-label').textContent = t('game.progress', { applied: corrections.length, s: corrections.length > 1 ? 's' : '', total, s2: total > 1 ? 's' : '' });
   document.getElementById('stat-corrections').textContent = corrections.length;
   document.getElementById('stat-total').textContent = total;
 }
@@ -152,7 +152,7 @@ document.getElementById('btn-submit')?.addEventListener('click', async () => {
   const duration = Math.round((Date.now() - startTime) / 1000);
   const btn = document.getElementById('btn-submit');
   btn.disabled = true;
-  btn.textContent = 'Correction…';
+  btn.textContent = t('game.btn_correcting');
 
   const correctionsPayload = corrections.map(c => ({ span_idx: parseInt(c.idx), correction: c.correction }));
 
@@ -169,7 +169,7 @@ document.getElementById('btn-submit')?.addEventListener('click', async () => {
     showToast(e.message, 'error');
     gameOver = false;
     btn.disabled = false;
-    btn.textContent = 'Terminer et voir le score';
+    btn.textContent = t('game.btn_submit');
   }
 });
 
@@ -190,8 +190,7 @@ function renderResults(result) {
   rv.classList.remove('hidden');
 
   document.getElementById('score-value').textContent = result.score + '%';
-  document.getElementById('score-summary').textContent =
-    `${result.correct} / ${result.total} fautes corrigées correctement`;
+  document.getElementById('score-summary').textContent = t('game.score_summary', { correct: result.correct, total: result.total });
 
   // All maps keyed by span_idx (integer) — no word-text ambiguity
   const detailMap = new Map();
@@ -232,13 +231,13 @@ function renderResults(result) {
         cls = 'badge-result-orange';
         display = userAnswer;
       }
-      const tip = `<span class="tooltip-row"><span class="tooltip-label">Mot invalide</span><span>${escapeHtml(detail.displayed_invalid)}</span></span><span class="tooltip-row"><span class="tooltip-label">Votre réponse</span><span>${escapeHtml(userAnswer || '—')}</span></span><span class="tooltip-row"><span class="tooltip-label">Mot valide</span><span>${escapeHtml(detail.original_valid)}</span></span><span class="tooltip-divider"></span><span class="tooltip-row"><span class="tooltip-label">${escapeHtml(detail.error_type)}</span><span>${escapeHtml(detail.explanation || '')}</span></span>`;
+      const tip = `<span class="tooltip-row"><span class="tooltip-label">${t('game.tooltip.invalid')}</span><span>${escapeHtml(detail.displayed_invalid)}</span></span><span class="tooltip-row"><span class="tooltip-label">${t('game.tooltip.your_answer')}</span><span>${escapeHtml(userAnswer || '—')}</span></span><span class="tooltip-row"><span class="tooltip-label">${t('game.tooltip.valid')}</span><span>${escapeHtml(detail.original_valid)}</span></span><span class="tooltip-divider"></span><span class="tooltip-row"><span class="tooltip-label">${escapeHtml(detail.error_type)}</span><span>${escapeHtml(detail.explanation || '')}</span></span>`;
       return `<span class="result-badge ${cls}">${escapeHtml(display)}<span class="result-tooltip">${tip}</span></span>`;
     }
 
     if (touchedCorrectSet.has(currentIdx)) {
       const c = corrections.find(x => parseInt(x.idx) === currentIdx);
-      const tip = `<span class="tooltip-row"><span class="tooltip-label">Mot correct</span><span>${escapeHtml(seg)}</span></span><span class="tooltip-row"><span class="tooltip-label">Votre modification</span><span>${escapeHtml(c?.correction || '—')}</span></span>`;
+      const tip = `<span class="tooltip-row"><span class="tooltip-label">${t('game.tooltip.correct_word')}</span><span>${escapeHtml(seg)}</span></span><span class="tooltip-row"><span class="tooltip-label">${t('game.tooltip.your_edit')}</span><span>${escapeHtml(c?.correction || '—')}</span></span>`;
       return `<span class="result-badge badge-result-blue">${escapeHtml(c?.correction || seg)}<span class="result-tooltip">${tip}</span></span>`;
     }
 
