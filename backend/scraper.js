@@ -2,14 +2,32 @@ import fetch from 'node-fetch';
 import { load } from 'cheerio';
 
 export async function scrapeRandom(source = 'wikipedia') {
-  if (source === 'lemonde') {
+  const MAX_RETRIES = 5;
+  const RETRIABLE_ERRORS = ['Article trop court', 'Texte insuffisant'];
+
+  async function attemptScrape() {
+    if (source === 'lemonde') {
+      try {
+        return await scrapeLeMonde();
+      } catch {
+        return await scrapeWikipedia();
+      }
+    }
+    return await scrapeWikipedia();
+  }
+
+  for (let attempt = 0; attempt < MAX_RETRIES; attempt++) {
     try {
-      return await scrapeLeMonde();
-    } catch {
-      return await scrapeWikipedia();
+      return await attemptScrape();
+    } catch (error) {
+      if (RETRIABLE_ERRORS.includes(error.message) && attempt < MAX_RETRIES - 1) {
+        // Silently retry for retriable errors
+        continue;
+      }
+      // Throw if it's not a retriable error or we've exhausted retries
+      throw error;
     }
   }
-  return await scrapeWikipedia();
 }
 
 async function scrapeWikipedia() {
