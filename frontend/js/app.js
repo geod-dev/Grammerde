@@ -1,7 +1,8 @@
 import { apiPost, apiGet, getToken, setSession, logout, updateNav, showToast } from './auth.js';
-import { getLang, loadTranslations, applyTranslations, initLangSelector } from './i18n.js';
+import { getLang, loadTranslations, applyTranslations, initLangSelector, initTheme } from './i18n.js';
 
 updateNav();
+initTheme();
 initLangSelector();
 loadTranslations().then(applyTranslations);
 document.getElementById('btn-logout')?.addEventListener('click', logout);

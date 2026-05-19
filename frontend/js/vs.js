@@ -1,7 +1,8 @@
 import { apiPost, getToken, getUser, showToast, updateNav } from './auth.js';
-import { loadTranslations, applyTranslations, initLangSelector } from './i18n.js';
+import { loadTranslations, applyTranslations, initLangSelector, initTheme } from './i18n.js';
 
 updateNav();
+initTheme();
 initLangSelector();
 loadTranslations().then(applyTranslations);
 
