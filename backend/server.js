@@ -19,6 +19,7 @@ app.use(cors());
 app.use(express.json());
 app.use(express.static(join(__dirname, '..', 'frontend')));
 app.use('/public', express.static(join(__dirname, '..', 'public')));
+app.use('/favicon.ico', express.static(join(__dirname, '..', 'public', 'favicon.ico')));
 
 // ── Auth ─────────────────────────────────────────────────────────────────────
 
