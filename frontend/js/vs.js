@@ -1,6 +1,9 @@
 import { apiPost, getToken, getUser, showToast, updateNav } from './auth.js';
+import { loadTranslations, applyTranslations, initLangSelector } from './i18n.js';
 
 updateNav();
+initLangSelector();
+loadTranslations().then(applyTranslations);
 
 if (!getToken()) {
   showToast('Connectez-vous pour jouer en VS', 'error');

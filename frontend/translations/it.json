@@ -1,0 +1,20 @@
+{
+  "wikipedia_subdomain": "it",
+  "flag_code": "it",
+  "hero": {
+    "eyebrow": "Gioco di correzione del testo",
+    "subtitle": "Missione del giorno: salvare la lingua italiana.",
+    "btn_play": "Gioca ora"
+  },
+  "configurator": {
+    "title": "Configura una partita",
+    "text_size": "Dimensione del testo",
+    "error_types": "Tipi di errori",
+    "launch": "Inizia la partita"
+  },
+  "nav": {
+    "login": "Accedi",
+    "register": "Registrati",
+    "logout": "Esci"
+  }
+}

@@ -55,15 +55,21 @@ function processSegments(segments) {
   return { corrupted_text, errors_map };
 }
 
-export async function injectErrors(text, difficulty = 'moyen', errorTypes = [], textSize = 'moyen') {
+const LANG_NAMES = {
+  fr: 'français', en: 'anglais', es: 'espagnol',
+  it: 'italien',  de: 'allemand', ar: 'arabe',
+};
+
+export async function injectErrors(text, difficulty = 'moyen', errorTypes = [], textSize = 'moyen', lang = 'fr') {
   const sizeHint    = TEXT_SIZE_HINTS[textSize] || TEXT_SIZE_HINTS.moyen;
+  const langName    = LANG_NAMES[lang] || lang;
   const activeTypes = errorTypes.length
     ? errorTypes
     : ['conjugaison', 'accord', 'homophone', 'orthographe'];
 
   const typesConstraint = `IMPORTANT : Tu dois UNIQUEMENT introduire des fautes de ces types, de manière équilibrée (minimum 1 par type si possible) : ${activeTypes.join(', ')}.`;
 
-  const systemPrompt = `Tu es un assistant qui introduit des fautes de français dans un texte.
+  const systemPrompt = `Tu es un assistant qui introduit des fautes dans un texte en ${langName}.
 Tu reçois un texte en français, un niveau de difficulté et des types de fautes.
 Tu retournes UNIQUEMENT un JSON valide avec deux champs :
 

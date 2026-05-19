@@ -1,0 +1,20 @@
+{
+  "wikipedia_subdomain": "en",
+  "flag_code": "gb",
+  "hero": {
+    "eyebrow": "Text correction game",
+    "subtitle": "Daily mission: save the English language.",
+    "btn_play": "Play now"
+  },
+  "configurator": {
+    "title": "Set up a game",
+    "text_size": "Text size",
+    "error_types": "Error types",
+    "launch": "Start game"
+  },
+  "nav": {
+    "login": "Log in",
+    "register": "Sign up",
+    "logout": "Log out"
+  }
+}

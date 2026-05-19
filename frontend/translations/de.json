@@ -1,0 +1,20 @@
+{
+  "wikipedia_subdomain": "de",
+  "flag_code": "de",
+  "hero": {
+    "eyebrow": "Textkorrektionsspiel",
+    "subtitle": "Tagesauftrag: Die deutsche Sprache retten.",
+    "btn_play": "Jetzt spielen"
+  },
+  "configurator": {
+    "title": "Spiel konfigurieren",
+    "text_size": "Textgröße",
+    "error_types": "Fehlertypen",
+    "launch": "Spiel starten"
+  },
+  "nav": {
+    "login": "Anmelden",
+    "register": "Registrieren",
+    "logout": "Abmelden"
+  }
+}

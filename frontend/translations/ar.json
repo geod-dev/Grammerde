@@ -1,0 +1,20 @@
+{
+  "wikipedia_subdomain": "ar",
+  "flag_code": "sa",
+  "hero": {
+    "eyebrow": "لعبة تصحيح النصوص",
+    "subtitle": "مهمة اليوم: إنقاذ اللغة العربية.",
+    "btn_play": "العب الآن"
+  },
+  "configurator": {
+    "title": "إعداد اللعبة",
+    "text_size": "حجم النص",
+    "error_types": "أنواع الأخطاء",
+    "launch": "ابدأ اللعبة"
+  },
+  "nav": {
+    "login": "تسجيل الدخول",
+    "register": "التسجيل",
+    "logout": "تسجيل الخروج"
+  }
+}

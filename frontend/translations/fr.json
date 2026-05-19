@@ -1,0 +1,20 @@
+{
+  "wikipedia_subdomain": "fr",
+  "flag_code": "fr",
+  "hero": {
+    "eyebrow": "Jeu de correction de texte",
+    "subtitle": "Mission du jour : sauver la langue française.",
+    "btn_play": "Jouer maintenant"
+  },
+  "configurator": {
+    "title": "Configurer une partie",
+    "text_size": "Taille du texte",
+    "error_types": "Types de fautes",
+    "launch": "Lancer la partie"
+  },
+  "nav": {
+    "login": "Connexion",
+    "register": "Inscription",
+    "logout": "Déconnexion"
+  }
+}

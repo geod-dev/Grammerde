@@ -1,0 +1,20 @@
+{
+  "wikipedia_subdomain": "es",
+  "flag_code": "es",
+  "hero": {
+    "eyebrow": "Juego de corrección de texto",
+    "subtitle": "Misión del día: salvar la lengua española.",
+    "btn_play": "Jugar ahora"
+  },
+  "configurator": {
+    "title": "Configurar una partida",
+    "text_size": "Tamaño del texto",
+    "error_types": "Tipos de errores",
+    "launch": "Iniciar partida"
+  },
+  "nav": {
+    "login": "Iniciar sesión",
+    "register": "Registrarse",
+    "logout": "Cerrar sesión"
+  }
+}

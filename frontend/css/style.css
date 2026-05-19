@@ -1054,6 +1054,55 @@ footer {
 
 .loading-text { font-size: 13px; color: var(--text-muted); }
 
+/* ── Language Selector ──────────────────────────────────────────────────── */
+
+.lang-selector { position: relative; display: flex; align-items: center; }
+
+.lang-btn {
+  background: none;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 4px 8px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  transition: background 0.15s;
+}
+.lang-btn:hover { background: var(--surface-2); }
+
+.lang-flag { width: 22px; height: 15px; object-fit: cover; border-radius: 2px; display: block; }
+
+.lang-dropdown {
+  position: absolute;
+  top: calc(100% + 8px);
+  right: 0;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  box-shadow: 0 8px 32px rgba(0,0,0,0.12);
+  min-width: 160px;
+  z-index: 200;
+  overflow: hidden;
+}
+
+.lang-option {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  padding: 10px 14px;
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-family: var(--font-body);
+  font-size: 14px;
+  color: var(--text);
+  text-align: left;
+  transition: background 0.12s;
+}
+.lang-option:hover { background: var(--surface-2); }
+.lang-option.active { color: var(--red); font-weight: 600; }
+
 /* ── Responsive ─────────────────────────────────────────────────────────── */
 
 @media (max-width: 600px) {

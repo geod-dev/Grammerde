@@ -46,6 +46,12 @@
 <nav class="nav">
   <a href="/" class="logo">Gram<span>merde</span></a>
   <div class="nav-actions">
+    <div class="lang-selector">
+      <button class="lang-btn" id="lang-btn">
+        <img id="lang-flag-current" src="/public/fr.png" alt="fr" class="lang-flag">
+      </button>
+      <div class="lang-dropdown hidden" id="lang-dropdown"></div>
+    </div>
     <a href="/profile.html" class="btn btn-ghost hidden" id="user-menu">
       <span id="nav-username"></span>
     </a>
@@ -104,14 +110,6 @@
         <label class="type-chip active"><input type="checkbox" data-type="accord" checked>Accords</label>
         <label class="type-chip active"><input type="checkbox" data-type="homophone" checked>Homophones</label>
         <label class="type-chip active"><input type="checkbox" data-type="orthographe" checked>Orthographe</label>
-      </div>
-    </div>
-
-    <div class="config-section">
-      <div class="config-label">Source</div>
-      <div class="source-toggle">
-        <button class="source-btn active" data-source="wikipedia">Wikipedia</button>
-        <button class="source-btn" data-source="lemonde">Le Monde</button>
       </div>
     </div>
 

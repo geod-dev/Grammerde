@@ -18,6 +18,7 @@ const wss = new WebSocketServer({ server });
 app.use(cors());
 app.use(express.json());
 app.use(express.static(join(__dirname, '..', 'frontend')));
+app.use('/public', express.static(join(__dirname, '..', 'public')));
 
 // ── Auth ─────────────────────────────────────────────────────────────────────
 
@@ -72,10 +73,10 @@ const TIMER_DURATIONS = { court: 60, moyen: 120, long: 180 };
 
 app.post('/api/game/start', optionalAuth, async (req, res) => {
   try {
-    const { difficulty = 'moyen', errorTypes = [], source = 'wikipedia', textSize = 'moyen' } = req.body;
+    const { difficulty = 'moyen', errorTypes = [], textSize = 'moyen', lang = 'fr' } = req.body;
     const timerDuration = TIMER_DURATIONS[textSize] || 120;
-    const { text, url } = await scrapeRandom(source);
-    const { corrupted_text, errors_map } = await injectErrors(text, difficulty, errorTypes, textSize);
+    const { text, url } = await scrapeRandom(lang);
+    const { corrupted_text, errors_map } = await injectErrors(text, difficulty, errorTypes, textSize, lang);
 
     const stmt = db.prepare(`
       INSERT INTO sessions (user_id, source_url, original_text, corrupted_text, errors_map, difficulty, error_types, total_errors, timer_duration)

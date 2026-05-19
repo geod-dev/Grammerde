@@ -1,13 +1,15 @@
 import { apiPost, apiGet, getToken, setSession, logout, updateNav, showToast } from './auth.js';
+import { getLang, loadTranslations, applyTranslations, initLangSelector } from './i18n.js';
 
 updateNav();
+initLangSelector();
+loadTranslations().then(applyTranslations);
 document.getElementById('btn-logout')?.addEventListener('click', logout);
 
 // ── Configurator ─────────────────────────────────────────────────────────────
 let config = {
   textSize: 'moyen',
   errorTypes: ['conjugaison', 'accord', 'homophone', 'orthographe'],
-  source: 'wikipedia',
 };
 
 // Text size buttons
@@ -32,22 +34,13 @@ document.querySelectorAll('.type-chip input[type="checkbox"]').forEach(input => 
   });
 });
 
-// Source toggle
-document.querySelectorAll('.source-btn').forEach(btn => {
-  btn.addEventListener('click', () => {
-    document.querySelectorAll('.source-btn').forEach(b => b.classList.remove('active'));
-    btn.classList.add('active');
-    config.source = btn.dataset.source;
-  });
-});
-
 // Launch game
 document.getElementById('btn-launch')?.addEventListener('click', async () => {
   const btn = document.getElementById('btn-launch');
   btn.disabled = true;
   btn.textContent = 'Chargement…';
   try {
-    const data = await apiPost('/game/start', config);
+    const data = await apiPost('/game/start', { ...config, lang: getLang() });
     sessionStorage.setItem('gameData', JSON.stringify(data));
     window.location.href = '/game.html';
   } catch (e) {

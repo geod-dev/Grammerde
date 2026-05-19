@@ -1,6 +1,9 @@
 import { apiPost, showToast, updateNav } from './auth.js';
+import { loadTranslations, applyTranslations, initLangSelector } from './i18n.js';
 
 updateNav();
+initLangSelector();
+loadTranslations().then(applyTranslations);
 
 const gameDataRaw = sessionStorage.getItem('gameData');
 if (!gameDataRaw) { window.location.href = '/'; }
