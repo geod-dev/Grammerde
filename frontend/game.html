@@ -79,19 +79,17 @@
       <a href="/profile.html" class="btn btn-outline btn-lg">Voir mon profil</a>
     </div>
 
-    <h2 style="font-family:var(--font-display);font-size:1.3rem;margin-bottom:16px">Détail des corrections</h2>
-    <table class="results-table">
-      <thead>
-        <tr>
-          <th>Mot fautif</th>
-          <th>Correction</th>
-          <th>Votre réponse</th>
-          <th>Résultat</th>
-          <th>Explication</th>
-        </tr>
-      </thead>
-      <tbody id="results-tbody"></tbody>
-    </table>
+    <h2 style="font-family:var(--font-display);font-size:1.3rem;font-weight:700;margin-bottom:16px">Détail du texte</h2>
+
+    <div class="results-legend">
+      <span class="results-legend-title">Légende</span>
+      <span class="result-badge badge-result-green">Correctement corrigé</span>
+      <span class="result-badge badge-result-orange">Mal corrigé</span>
+      <span class="result-badge badge-result-red">Non corrigé</span>
+      <span class="result-badge badge-result-blue">Mot juste modifié</span>
+    </div>
+
+    <div class="text-display" id="results-text"></div>
   </div>
 </div>
 

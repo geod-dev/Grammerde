@@ -130,6 +130,15 @@ document.getElementById('btn-submit')?.addEventListener('click', async () => {
   }
 });
 
+function escapeHtml(str) {
+  return String(str)
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;');
+}
+
 function renderResults(result) {
   document.getElementById('game-view').classList.add('hidden');
   const rv = document.getElementById('results-view');
@@ -139,19 +148,64 @@ function renderResults(result) {
   document.getElementById('score-summary').textContent =
     `${result.correct} / ${result.total} fautes corrigées correctement`;
 
-  const tbody = document.getElementById('results-tbody');
-  tbody.innerHTML = result.details.map(d => `
-    <tr>
-      <td>${d.wrong_word}</td>
-      <td class="${d.is_correct ? 'result-correct' : 'result-wrong'}">${d.correct_word}</td>
-      <td>${d.user_answer || '—'}</td>
-      <td class="${d.is_correct ? 'result-correct' : 'result-wrong'}">${d.is_correct ? '✓' : '✗'}</td>
-      <td>
-        <div>${d.error_type}</div>
-        <div class="result-explanation">${d.explanation || ''}</div>
-      </td>
-    </tr>
-  `).join('');
+  const normalize = s => s.replace(/[.,;:!?«»"'()\[\]\-—–]+/g, '').trim().toLowerCase();
+
+  // Map normalizedWrongWord → detail
+  const detailMap = new Map();
+  result.details.forEach(d => detailMap.set(normalize(d.wrong_word), d));
+
+  // Map normalizedWrongWord → user correction
+  const userAnswerMap = new Map();
+  corrections.forEach(c => userAnswerMap.set(normalize(c.wrong_word), c.correction));
+
+  // Words user touched that were NOT actual errors → blue badge
+  const touchedCorrectSet = new Set();
+  corrections.forEach(c => {
+    const key = normalize(c.wrong_word);
+    if (!detailMap.has(key)) touchedCorrectSet.add(key);
+  });
+
+  const usedErrors = new Set();
+  const segments = gameData.corrupted_text.split(/(\s+)/);
+
+  const html = segments.map(seg => {
+    if (/^\s+$/.test(seg)) return seg;
+    const segNorm = normalize(seg);
+    if (!segNorm) return escapeHtml(seg);
+
+    const detail = detailMap.get(segNorm);
+    if (detail && !usedErrors.has(segNorm)) {
+      usedErrors.add(segNorm);
+      const userAnswer = userAnswerMap.get(segNorm);
+
+      let cls, display;
+      if (!userAnswer) {
+        cls = 'badge-result-red';
+        display = seg;
+      } else if (detail.is_correct) {
+        cls = 'badge-result-green';
+        display = userAnswer;
+      } else {
+        cls = 'badge-result-orange';
+        display = userAnswer;
+      }
+
+      const tip = `<span class="tooltip-row"><span class="tooltip-label">Original</span><span>${escapeHtml(detail.wrong_word)}</span></span><span class="tooltip-row"><span class="tooltip-label">Votre réponse</span><span>${escapeHtml(userAnswer || '—')}</span></span><span class="tooltip-row"><span class="tooltip-label">Correction</span><span>${escapeHtml(detail.correct_word)}</span></span><span class="tooltip-divider"></span><span class="tooltip-row"><span class="tooltip-label">${escapeHtml(detail.error_type)}</span><span>${escapeHtml(detail.explanation || '')}</span></span>`;
+
+      return `<span class="result-badge ${cls}">${escapeHtml(display)}<span class="result-tooltip">${tip}</span></span>`;
+    }
+
+    if (touchedCorrectSet.has(segNorm)) {
+      const c = corrections.find(x => normalize(x.wrong_word) === segNorm);
+      const tip = `<span class="tooltip-row"><span class="tooltip-label">Mot correct</span><span>${escapeHtml(seg)}</span></span><span class="tooltip-row"><span class="tooltip-label">Votre modification</span><span>${escapeHtml(c?.correction || '—')}</span></span>`;
+      return `<span class="result-badge badge-result-blue">${escapeHtml(c?.correction || seg)}<span class="result-tooltip">${tip}</span></span>`;
+    }
+
+    return escapeHtml(seg);
+  }).join('');
+
+  const container = document.getElementById('results-text');
+  if (container) container.innerHTML = html;
 }
 
 document.getElementById('btn-replay')?.addEventListener('click', () => {
