@@ -10,9 +10,10 @@ const DIFFICULTY_INSTRUCTIONS = {
 
 export async function injectErrors(text, difficulty = 'moyen', errorTypes = []) {
   const difficultyHint = DIFFICULTY_INSTRUCTIONS[difficulty] || DIFFICULTY_INSTRUCTIONS.moyen;
-  const typesHint = errorTypes.length
-    ? `Types de fautes à introduire (prioritairement) : ${errorTypes.join(', ')}.`
-    : 'Mélange de tous les types de fautes.';
+  const activeTypes = errorTypes.length ? errorTypes : ['conjugaison', 'orthographe', 'accord', 'homophone', 'ponctuation', 'syntaxe'];
+  const typesConstraint = errorTypes.length
+    ? `IMPORTANT : Tu dois UNIQUEMENT introduire des fautes de ces types (aucun autre type n'est autorisé) : ${errorTypes.join(', ')}.`
+    : 'Introduis un mélange équilibré de tous les types de fautes.';
 
   const systemPrompt = `Tu es un assistant qui introduit des fautes de français dans un texte.
 Tu reçois un texte en français, un niveau de difficulté et des types de fautes.
@@ -25,12 +26,15 @@ Niveaux de difficulté :
 - moyen : conjugaisons incorrectes, accords sujet-verbe manqués, pluriels oubliés
 - difficile : subjonctif mal employé, participes passés complexes, accords rares
 
-Types de fautes possibles : conjugaison, orthographe, accord, homophone, ponctuation, syntaxe
+Types de fautes disponibles : conjugaison, orthographe, accord, homophone, ponctuation, syntaxe
 
-Introduis entre 8 et 15 fautes bien réparties. Ne modifie pas les noms propres.`;
+${typesConstraint}
+
+Chaque objet dans errors_map doit avoir error_type égal à l'un des types autorisés.
+Introduis entre 8 et 15 fautes. Ne modifie pas les noms propres.`;
 
   const userPrompt = `Niveau: ${difficulty} (${difficultyHint})
-${typesHint}
+Types de fautes autorisés UNIQUEMENT : ${activeTypes.join(', ')}
 
 Texte:
 ${text}`;

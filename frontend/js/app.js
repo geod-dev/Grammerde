@@ -17,11 +17,11 @@ document.querySelectorAll('.diff-btn').forEach(btn => {
 });
 
 // Error type chips
-document.querySelectorAll('.type-chip').forEach(chip => {
-  chip.addEventListener('click', () => {
-    chip.classList.toggle('active');
-    const type = chip.dataset.type;
-    if (chip.classList.contains('active')) {
+document.querySelectorAll('.type-chip input[type="checkbox"]').forEach(input => {
+  input.addEventListener('change', () => {
+    const type = input.dataset.type;
+    input.closest('.type-chip').classList.toggle('active', input.checked);
+    if (input.checked) {
       config.errorTypes.push(type);
     } else {
       config.errorTypes = config.errorTypes.filter(t => t !== type);
