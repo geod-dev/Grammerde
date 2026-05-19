@@ -87,7 +87,7 @@
     <h1 class="vs-title">En attente…</h1>
     <p style="color:var(--text-dim);margin-bottom:24px" id="waiting-status">Connexion…</p>
 
-    <div class="card">
+    <div class="card" id="waiting-code-card">
       <div class="config-label">Code à partager</div>
       <div class="room-code-display" id="display-code">——</div>
       <p style="font-size:13px;color:var(--text-dim)">Partagez ce code à votre adversaire</p>
@@ -133,18 +133,61 @@
 </div>
 
 <!-- Finish Screen -->
-<div id="finish-screen" class="vs-finish-screen hidden">
-  <div class="winner-label">Résultat</div>
-  <div class="winner-name" id="finish-title">—</div>
-  <div style="color:var(--text-dim);font-size:16px" id="finish-scores"></div>
-  <button class="btn btn-primary btn-lg" id="btn-play-again">Rejouer</button>
+<div id="finish-screen" class="hidden">
+  <div class="results">
+    <div class="score-display">
+      <div class="score-big" id="finish-title">—</div>
+      <div class="score-label" id="finish-my-score"></div>
+    </div>
+
+    <div style="display:flex;gap:12px;justify-content:center;margin-bottom:40px">
+      <button class="btn btn-primary btn-lg" id="btn-play-again">Rejouer</button>
+      <a href="/profile.html" class="btn btn-outline btn-lg">Voir mon profil</a>
+    </div>
+
+    <h2 style="font-family:var(--font-display);font-size:1.3rem;font-weight:700;margin-bottom:16px">Mes statistiques</h2>
+    <div class="stats-grid" style="margin-bottom:24px">
+      <div class="stat-card">
+        <div class="stat-card-value" id="finish-stat-applied">—</div>
+        <div class="stat-card-label">Corrections appliquées</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-card-value" style="color:var(--green)" id="finish-stat-valid">—</div>
+        <div class="stat-card-label">Valides</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-card-value" style="color:var(--orange)" id="finish-stat-wrong">—</div>
+        <div class="stat-card-label">Fausses</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-card-value" style="color:var(--red)" id="finish-stat-missed">—</div>
+        <div class="stat-card-label">Oubliées</div>
+      </div>
+    </div>
+
+    <div class="sidebar-card" style="margin-bottom:32px;text-align:center;font-size:14px;color:var(--text-dim)">
+      <span id="finish-op-name" style="color:var(--text);font-weight:600">Adversaire</span>
+      — <span id="finish-op-applied">—</span> corrections appliquées
+    </div>
+
+    <h2 style="font-family:var(--font-display);font-size:1.3rem;font-weight:700;margin-bottom:16px">Mon compte rendu</h2>
+    <div class="results-legend">
+      <span class="results-legend-title">Légende</span>
+      <span class="result-badge badge-result-green">Correctement corrigé</span>
+      <span class="result-badge badge-result-orange">Mal corrigé</span>
+      <span class="result-badge badge-result-red">Non corrigé</span>
+      <span class="result-badge badge-result-blue">Mot juste modifié</span>
+    </div>
+    <div class="text-display" id="vs-results-text"></div>
+  </div>
 </div>
 
 <!-- VS Correction Popup -->
 <div id="vs-popup" class="popup-overlay hidden">
   <div class="popup">
-    <div class="popup-label">Correction pour :</div>
+    <div class="popup-label">Mot invalide affiché :</div>
     <div class="popup-word" id="vs-popup-word"></div>
+    <div class="popup-label" style="margin-top:12px">Mot valide (votre correction) :</div>
     <input
       type="text"
       class="popup-input"

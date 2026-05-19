@@ -57,11 +57,13 @@ document.getElementById('btn-launch')?.addEventListener('click', async () => {
   }
 });
 
-// VS mode
-document.getElementById('btn-vs')?.addEventListener('click', () => {
+// VS mode — guard on all entry points
+function goVs() {
   if (!getToken()) { showToast('Connectez-vous pour jouer en VS', 'error'); return; }
   window.location.href = '/vs.html';
-});
+}
+document.getElementById('btn-vs')?.addEventListener('click', goVs);
+document.getElementById('btn-vs-hero')?.addEventListener('click', goVs);
 
 // ── Leaderboard ───────────────────────────────────────────────────────────────
 let lbPeriod = 'all';

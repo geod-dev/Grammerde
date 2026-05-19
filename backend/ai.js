@@ -40,11 +40,11 @@ function processSegments(segments) {
       if (range?.seg.type === 'error' && !usedSegments.has(range)) {
         usedSegments.add(range);
         errors_map.push({
-          span_idx:     spanIdx,
-          mot_invalide: clean,
-          mot_valide:   range.seg.valide,
-          error_type:   range.seg.error_type,
-          explanation:  range.seg.explanation,
+          span_idx:          spanIdx,
+          displayed_invalid: clean,
+          original_valid:    range.seg.valide,
+          error_type:        range.seg.error_type,
+          explanation:       range.seg.explanation,
         });
       }
       spanIdx++;

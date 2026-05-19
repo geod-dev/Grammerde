@@ -122,7 +122,7 @@ app.post('/api/game/correct', optionalAuth, (req, res) => {
       return res.json({ is_correct: false, not_an_error: true });
     }
 
-    const is_correct = validateCorrection(correction, error.mot_valide);
+    const is_correct = validateCorrection(correction, error.original_valid);
 
     db.prepare(`
       INSERT INTO session_corrections (session_id, span_idx, user_answer, is_correct)
@@ -132,9 +132,9 @@ app.post('/api/game/correct', optionalAuth, (req, res) => {
 
     res.json({
       is_correct,
-      mot_valide:  error.mot_valide,
-      error_type:  error.error_type,
-      explanation: error.explanation,
+      original_valid: error.original_valid,
+      error_type:     error.error_type,
+      explanation:    error.explanation,
     });
   } catch (e) {
     console.error('game/correct error:', e);
@@ -167,7 +167,7 @@ app.post('/api/game/submit', optionalAuth, (req, res) => {
         isCorrect = sv.is_correct === 1;
       } else if (cl) {
         userAnswer = cl.correction;
-        isCorrect = validateCorrection(cl.correction, err.mot_valide);
+        isCorrect = validateCorrection(cl.correction, err.original_valid);
       } else {
         userAnswer = null;
         isCorrect = false;
@@ -175,13 +175,13 @@ app.post('/api/game/submit', optionalAuth, (req, res) => {
 
       if (isCorrect) correct++;
       return {
-        span_idx:     err.span_idx,
-        mot_invalide: err.mot_invalide,
-        mot_valide:   err.mot_valide,
-        error_type:   err.error_type,
-        explanation:  err.explanation,
-        user_answer:  userAnswer,
-        is_correct:   isCorrect,
+        span_idx:          err.span_idx,
+        displayed_invalid: err.displayed_invalid,
+        original_valid:    err.original_valid,
+        error_type:        err.error_type,
+        explanation:       err.explanation,
+        user_answer:       userAnswer,
+        is_correct:        isCorrect,
       };
     });
 
@@ -315,6 +315,7 @@ wss.on('connection', (ws, req) => {
           broadcast(roomState.players, {
             type: 'game_start',
             corrupted_text,
+            errors_map,
             total_errors: errors_map.length,
             duration: 120,
           });
