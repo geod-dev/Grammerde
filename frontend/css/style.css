@@ -1158,6 +1158,31 @@ footer {
   .game-layout { padding: 16px; }
 }
 
+/* ── VS Finish Tabs ─────────────────────────────────────────────────────── */
+
+.vs-finish-tabs {
+  display: flex;
+  border-bottom: 2px solid var(--border);
+  margin-bottom: 24px;
+}
+
+.vs-tab {
+  flex: 1;
+  padding: 10px 16px;
+  background: none;
+  border: none;
+  border-bottom: 2px solid transparent;
+  margin-bottom: -2px;
+  cursor: pointer;
+  color: var(--text-muted);
+  font-family: var(--font-body);
+  font-size: 14px;
+  font-weight: 500;
+  transition: color 0.15s, border-color 0.15s;
+}
+.vs-tab.active { color: var(--red); border-bottom-color: var(--red); font-weight: 600; }
+.vs-tab:hover:not(.active) { color: var(--text); }
+
 /* ── VS Avatar ──────────────────────────────────────────────────────────── */
 
 .vs-avatar {

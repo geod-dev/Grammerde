@@ -285,6 +285,16 @@ function escapeHtml(str) {
 
 function normalizeStr(s) { return s.trim().toLowerCase().replace(/\s+/g, ' '); }
 
+// Tab switching
+document.querySelectorAll('.vs-tab').forEach(tab => {
+  tab.addEventListener('click', () => {
+    document.querySelectorAll('.vs-tab').forEach(t => t.classList.remove('active'));
+    tab.classList.add('active');
+    ['tab-my-results', 'tab-op-results'].forEach(id => document.getElementById(id)?.classList.add('hidden'));
+    document.getElementById(tab.dataset.tab)?.classList.remove('hidden');
+  });
+});
+
 function showGameOver(msg) {
   showView('finish-screen');
 
@@ -293,47 +303,30 @@ function showGameOver(msg) {
   titleEl.textContent = isWinner ? 'Victoire !' : 'Défaite';
   titleEl.style.color = isWinner ? 'var(--green)' : 'var(--red)';
 
-  const opId = Object.keys(msg.scores).find(id => id != user.id);
-  const opCount = opId ? (msg.scores[opId] ?? 0) : null;
+  const myScore = msg.player_scores?.[user.id];
+  renderMyResults(myScore);
 
-  renderVsResults(opCount);
+  const opId = Object.keys(msg.scores).find(id => id != user.id);
+  if (opId && msg.all_corrections?.[opId]) {
+    const opName = msg.player_info?.[opId]?.username || 'Adversaire';
+    const opScore = msg.player_scores?.[opId];
+    document.getElementById('op-tab-btn').textContent = opName;
+    document.getElementById('op-results-name').textContent = opName;
+    renderOpponentResults(msg.all_corrections[opId], opScore);
+  }
 }
 
-function renderVsResults(opponentCount) {
-  const detailMap = new Map(vsErrors.map(e => [e.span_idx, e]));
-  const userAnswerMap = new Map(vsCorrections.map(c => [parseInt(c.idx), c.correction]));
-
-  // Compute stats
-  let valid = 0, wrong = 0, missed = 0;
-  vsErrors.forEach(err => {
-    const answer = userAnswerMap.get(err.span_idx);
-    if (!answer) { missed++; return; }
-    if (normalizeStr(answer) === normalizeStr(err.original_valid)) valid++;
-    else wrong++;
-  });
-  const applied = vsCorrections.length;
-  const score = vsErrors.length ? Math.round((valid / vsErrors.length) * 100) : 0;
-
-  document.getElementById('finish-my-score').textContent = `${score}% — ${valid} / ${vsErrors.length} fautes corrigées correctement`;
-  document.getElementById('finish-stat-applied').textContent = applied;
-  document.getElementById('finish-stat-valid').textContent = valid;
-  document.getElementById('finish-stat-wrong').textContent = wrong;
-  document.getElementById('finish-stat-missed').textContent = missed;
-
-  if (opponentCount !== null) {
-    document.getElementById('finish-op-applied').textContent = opponentCount;
-  }
-
-  // Words touched that are not errors
+function buildResultsHtml(corrections, errors, corruptedText, responseLabel) {
+  const detailMap = new Map(errors.map(e => [e.span_idx, e]));
+  const answerMap = new Map(corrections.map(c => [parseInt(c.idx), c.correction]));
   const touchedCorrectSet = new Set();
-  vsCorrections.forEach(c => {
+  corrections.forEach(c => {
     const idx = parseInt(c.idx);
     if (!detailMap.has(idx)) touchedCorrectSet.add(idx);
   });
 
-  // Render text with colored badges
   let spanIdx = 0;
-  const html = vsCorruptedText.split(/(\s+)/).map(seg => {
+  return corruptedText.split(/(\s+)/).map(seg => {
     if (/^\s+$/.test(seg)) return seg;
     const isPunct = /^[.,;:!?«»"'()\[\]\-—–]+$/.test(seg);
     const clean   = seg.replace(/^[^a-zA-ZÀ-ÿ]+|[^a-zA-ZÀ-ÿ]+$/g, '');
@@ -343,27 +336,51 @@ function renderVsResults(opponentCount) {
     const detail = detailMap.get(currentIdx);
 
     if (detail) {
-      const userAnswer = userAnswerMap.get(currentIdx);
+      const answer = answerMap.get(currentIdx);
       let cls, display;
-      if (!userAnswer)                                                      { cls = 'badge-result-red';    display = seg; }
-      else if (normalizeStr(userAnswer) === normalizeStr(detail.original_valid)) { cls = 'badge-result-green';  display = userAnswer; }
-      else                                                                   { cls = 'badge-result-orange'; display = userAnswer; }
+      if (!answer)                                                        { cls = 'badge-result-red';    display = seg; }
+      else if (normalizeStr(answer) === normalizeStr(detail.original_valid)) { cls = 'badge-result-green';  display = answer; }
+      else                                                                 { cls = 'badge-result-orange'; display = answer; }
 
-      const tip = `<span class="tooltip-row"><span class="tooltip-label">Mot invalide</span><span>${escapeHtml(detail.displayed_invalid)}</span></span><span class="tooltip-row"><span class="tooltip-label">Votre réponse</span><span>${escapeHtml(userAnswer || '—')}</span></span><span class="tooltip-row"><span class="tooltip-label">Mot valide</span><span>${escapeHtml(detail.original_valid)}</span></span><span class="tooltip-divider"></span><span class="tooltip-row"><span class="tooltip-label">${escapeHtml(detail.error_type)}</span><span>${escapeHtml(detail.explanation || '')}</span></span>`;
+      const tip = `<span class="tooltip-row"><span class="tooltip-label">Mot invalide</span><span>${escapeHtml(detail.displayed_invalid)}</span></span><span class="tooltip-row"><span class="tooltip-label">${escapeHtml(responseLabel)}</span><span>${escapeHtml(answer || '—')}</span></span><span class="tooltip-row"><span class="tooltip-label">Mot valide</span><span>${escapeHtml(detail.original_valid)}</span></span><span class="tooltip-divider"></span><span class="tooltip-row"><span class="tooltip-label">${escapeHtml(detail.error_type)}</span><span>${escapeHtml(detail.explanation || '')}</span></span>`;
       return `<span class="result-badge ${cls}">${escapeHtml(display)}<span class="result-tooltip">${tip}</span></span>`;
     }
 
     if (touchedCorrectSet.has(currentIdx)) {
-      const c = vsCorrections.find(x => parseInt(x.idx) === currentIdx);
-      const tip = `<span class="tooltip-row"><span class="tooltip-label">Mot correct</span><span>${escapeHtml(seg)}</span></span><span class="tooltip-row"><span class="tooltip-label">Votre modification</span><span>${escapeHtml(c?.correction || '—')}</span></span>`;
+      const c = corrections.find(x => parseInt(x.idx) === currentIdx);
+      const tip = `<span class="tooltip-row"><span class="tooltip-label">Mot correct</span><span>${escapeHtml(seg)}</span></span><span class="tooltip-row"><span class="tooltip-label">${escapeHtml(responseLabel)}</span><span>${escapeHtml(c?.correction || '—')}</span></span>`;
       return `<span class="result-badge badge-result-blue">${escapeHtml(c?.correction || seg)}<span class="result-tooltip">${tip}</span></span>`;
     }
 
     return escapeHtml(seg);
   }).join('');
+}
+
+function renderMyResults(playerScore) {
+  const valid   = playerScore?.valid   ?? 0;
+  const wrong   = playerScore?.wrong   ?? 0;
+  const missed  = playerScore?.missed  ?? 0;
+  const applied = playerScore?.applied ?? vsCorrections.length;
+  const score   = vsErrors.length ? Math.round((valid / vsErrors.length) * 100) : 0;
+
+  document.getElementById('finish-my-score').textContent = `${score}% — ${valid} / ${vsErrors.length} fautes corrigées correctement`;
+  document.getElementById('finish-stat-applied').textContent = applied;
+  document.getElementById('finish-stat-valid').textContent   = valid;
+  document.getElementById('finish-stat-wrong').textContent   = wrong;
+  document.getElementById('finish-stat-missed').textContent  = missed;
 
   const container = document.getElementById('vs-results-text');
-  if (container) container.innerHTML = html;
+  if (container) container.innerHTML = buildResultsHtml(vsCorrections, vsErrors, vsCorruptedText, 'Votre réponse');
+}
+
+function renderOpponentResults(opCorrections, opScore) {
+  document.getElementById('op-stat-applied').textContent = opScore?.applied ?? opCorrections.length;
+  document.getElementById('op-stat-valid').textContent   = opScore?.valid   ?? '—';
+  document.getElementById('op-stat-wrong').textContent   = opScore?.wrong   ?? '—';
+  document.getElementById('op-stat-missed').textContent  = opScore?.missed  ?? '—';
+
+  const container = document.getElementById('op-results-text');
+  if (container) container.innerHTML = buildResultsHtml(opCorrections, vsErrors, vsCorruptedText, 'Sa réponse');
 }
 
 document.getElementById('btn-play-again')?.addEventListener('click', () => window.location.href = '/');

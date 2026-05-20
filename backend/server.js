@@ -463,7 +463,14 @@ function endGame(roomCode, disconnectedUserId = null) {
   }
 
   db.prepare('UPDATE vs_rooms SET status = ?, winner_id = ? WHERE room_code = ?').run('finished', winnerId, roomCode);
-  broadcast(roomState.players, { type: 'game_over', scores, player_scores: playerScores, winner_id: winnerId });
+  broadcast(roomState.players, {
+    type: 'game_over',
+    scores,
+    player_scores: playerScores,
+    all_corrections: roomState.corrections,
+    player_info: roomState.playerInfo,
+    winner_id: winnerId,
+  });
   rooms.delete(roomCode);
 }
 

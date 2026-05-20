@@ -164,45 +164,80 @@
       <div class="score-label" id="finish-my-score"></div>
     </div>
 
-    <div style="display:flex;gap:12px;justify-content:center;margin-bottom:40px">
-      <button class="btn btn-primary btn-lg" id="btn-play-again" data-i18n="vs.finish.btn_replay">Rejouer</button>
-      <a href="/profile.html" class="btn btn-outline btn-lg" data-i18n="vs.finish.btn_profile">Voir mon profil</a>
+    <div style="display:flex;gap:12px;justify-content:center;margin-bottom:32px">
+      <button class="btn btn-primary btn-lg" id="btn-play-again">Rejouer</button>
+      <a href="/profile.html" class="btn btn-outline btn-lg">Voir mon profil</a>
     </div>
 
-    <h2 style="font-family:var(--font-display);font-size:1.3rem;font-weight:700;margin-bottom:16px" data-i18n="vs.finish.stats_title">Mes statistiques</h2>
-    <div class="stats-grid" style="margin-bottom:24px">
-      <div class="stat-card">
-        <div class="stat-card-value" id="finish-stat-applied">—</div>
-        <div class="stat-card-label" data-i18n="vs.finish.stat_applied">Corrections appliquées</div>
-      </div>
-      <div class="stat-card">
-        <div class="stat-card-value" style="color:var(--green)" id="finish-stat-valid">—</div>
-        <div class="stat-card-label" data-i18n="vs.finish.stat_valid">Valides</div>
-      </div>
-      <div class="stat-card">
-        <div class="stat-card-value" style="color:var(--orange)" id="finish-stat-wrong">—</div>
-        <div class="stat-card-label" data-i18n="vs.finish.stat_wrong">Fausses</div>
-      </div>
-      <div class="stat-card">
-        <div class="stat-card-value" style="color:var(--red)" id="finish-stat-missed">—</div>
-        <div class="stat-card-label" data-i18n="vs.finish.stat_missed">Oubliées</div>
-      </div>
+    <!-- Tabs -->
+    <div class="vs-finish-tabs">
+      <button class="vs-tab active" data-tab="tab-my-results">Mes résultats</button>
+      <button class="vs-tab" data-tab="tab-op-results" id="op-tab-btn">Adversaire</button>
     </div>
 
-    <div class="sidebar-card" style="margin-bottom:32px;text-align:center;font-size:14px;color:var(--text-dim)">
-      <span id="finish-op-name" style="color:var(--text);font-weight:600">Adversaire</span>
-      — <span id="finish-op-applied">—</span> <span data-i18n="vs.finish.op_corrections">corrections appliquées</span>
+    <!-- My results tab -->
+    <div id="tab-my-results">
+      <h2 style="font-family:var(--font-display);font-size:1.3rem;font-weight:700;margin-bottom:16px">Mes statistiques</h2>
+      <div class="stats-grid" style="margin-bottom:24px">
+        <div class="stat-card">
+          <div class="stat-card-value" id="finish-stat-applied">—</div>
+          <div class="stat-card-label">Corrections appliquées</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-card-value" style="color:var(--green)" id="finish-stat-valid">—</div>
+          <div class="stat-card-label">Valides</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-card-value" style="color:var(--orange)" id="finish-stat-wrong">—</div>
+          <div class="stat-card-label">Fausses</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-card-value" style="color:var(--red)" id="finish-stat-missed">—</div>
+          <div class="stat-card-label">Oubliées</div>
+        </div>
+      </div>
+      <h2 style="font-family:var(--font-display);font-size:1.3rem;font-weight:700;margin-bottom:16px">Mon compte rendu</h2>
+      <div class="results-legend">
+        <span class="results-legend-title">Légende</span>
+        <span class="result-badge badge-result-green">Correctement corrigé</span>
+        <span class="result-badge badge-result-orange">Mal corrigé</span>
+        <span class="result-badge badge-result-red">Non corrigé</span>
+        <span class="result-badge badge-result-blue">Mot correct modifié</span>
+      </div>
+      <div class="text-display" id="vs-results-text"></div>
     </div>
 
-    <h2 style="font-family:var(--font-display);font-size:1.3rem;font-weight:700;margin-bottom:16px" data-i18n="vs.finish.report_title">Mon compte rendu</h2>
-    <div class="results-legend">
-      <span class="results-legend-title" data-i18n="vs.finish.legend.title">Légende</span>
-      <span class="result-badge badge-result-green" data-i18n="vs.finish.legend.correct">Correctement corrigé</span>
-      <span class="result-badge badge-result-orange" data-i18n="vs.finish.legend.wrong">Mal corrigé</span>
-      <span class="result-badge badge-result-red" data-i18n="vs.finish.legend.missed">Non corrigé</span>
-      <span class="result-badge badge-result-blue" data-i18n="vs.finish.legend.valid_touched">Mot correct modifié</span>
+    <!-- Opponent results tab -->
+    <div id="tab-op-results" class="hidden">
+      <h2 style="font-family:var(--font-display);font-size:1.3rem;font-weight:700;margin-bottom:16px">Statistiques <span id="op-results-name">adversaire</span></h2>
+      <div class="stats-grid" style="margin-bottom:24px">
+        <div class="stat-card">
+          <div class="stat-card-value" id="op-stat-applied">—</div>
+          <div class="stat-card-label">Corrections appliquées</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-card-value" style="color:var(--green)" id="op-stat-valid">—</div>
+          <div class="stat-card-label">Valides</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-card-value" style="color:var(--orange)" id="op-stat-wrong">—</div>
+          <div class="stat-card-label">Fausses</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-card-value" style="color:var(--red)" id="op-stat-missed">—</div>
+          <div class="stat-card-label">Oubliées</div>
+        </div>
+      </div>
+      <h2 style="font-family:var(--font-display);font-size:1.3rem;font-weight:700;margin-bottom:16px">Compte rendu adversaire</h2>
+      <div class="results-legend">
+        <span class="results-legend-title">Légende</span>
+        <span class="result-badge badge-result-green">Correctement corrigé</span>
+        <span class="result-badge badge-result-orange">Mal corrigé</span>
+        <span class="result-badge badge-result-red">Non corrigé</span>
+        <span class="result-badge badge-result-blue">Mot correct modifié</span>
+      </div>
+      <div class="text-display" id="op-results-text"></div>
     </div>
-    <div class="text-display" id="vs-results-text"></div>
   </div>
 </div>
 

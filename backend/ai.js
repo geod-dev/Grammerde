@@ -93,10 +93,11 @@ RÈGLES ABSOLUES (violation = résultat inutilisable) :
 2. "valide" DOIT être le mot EXACT copié du texte original — même casse, même forme, aucune modification.
 3. "invalide" est le mot fautif affiché au joueur à la place du mot original.
 4. "invalide" ≠ "valide" — si les deux sont identiques, la faute est invalide.
-5. Chaque error porte sur UN SEUL mot (invalide et valide = un seul mot, sans espace ni ponctuation adjacente).
-6. Ne corromps JAMAIS : noms propres, chiffres, sigles, abréviations, ponctuation.
-7. La faute doit être INCONTESTABLEMENT fausse dans son contexte — évite tout cas ambigu ou subjectif.
-8. Introduis entre 8 et 12 fautes, réparties équitablement sur les types demandés (minimum 2 par type si possible).
+5. UN SEUL MOT PAR FAUTE — INTERDICTION ABSOLUE de corrompre un groupe de mots. "invalide" et "valide" ne contiennent jamais d'espace. Exemples STRICTEMENT INTERDITS : invalide "ne pas", invalide "les chats", invalide "avait été", invalide "de la". Si tu veux corrompre une expression, choisis UN seul mot dans cette expression.
+6. UNICITÉ — Ne jamais corrompre deux fois le même mot ou la même forme dans le texte. Si "était" apparaît 3 fois, tu ne peux le corrompre qu'une fois maximum. Chaque mot corrompu doit être unique dans le texte.
+7. Ne corromps JAMAIS : noms propres, chiffres, sigles, abréviations, ponctuation.
+8. La faute doit être INCONTESTABLEMENT fausse dans son contexte — évite tout cas ambigu ou subjectif.
+9. Introduis entre 8 et 12 fautes, réparties équitablement sur les types demandés (minimum 2 par type si possible).
 
 EXEMPLES PAR TYPE DE FAUTE :
 ${examplesBlock}
