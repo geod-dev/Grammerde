@@ -272,11 +272,11 @@ function genRoomCode() {
 }
 
 app.post('/api/vs/create', authenticateToken, (req, res) => {
-  const { text_size = 'moyen', lang = 'fr' } = req.body;
+  const { lang = 'fr' } = req.body;
   let code;
   do { code = genRoomCode(); } while (db.prepare('SELECT id FROM vs_rooms WHERE room_code = ?').get(code));
 
-  db.prepare('INSERT INTO vs_rooms (room_code, player1_id, difficulty, lang, text_size) VALUES (?, ?, ?, ?, ?)').run(code, req.user.id, 'moyen', lang, text_size);
+  db.prepare('INSERT INTO vs_rooms (room_code, player1_id, difficulty, lang) VALUES (?, ?, ?, ?)').run(code, req.user.id, 'moyen', lang);
   res.json({ room_code: code });
 });
 
@@ -323,7 +323,7 @@ wss.on('connection', (ws, req) => {
       const room = db.prepare('SELECT * FROM vs_rooms WHERE room_code = ?').get(room_code);
       if (!room) return ws.send(JSON.stringify({ type: 'error', message: 'Room introuvable' }));
 
-      if (!rooms.has(room_code)) rooms.set(room_code, { players: [], scores: {}, corrections: {}, playerInfo: {}, gameData: null, timer: null });
+      if (!rooms.has(room_code)) rooms.set(room_code, { players: [], scores: {}, corrections: {}, playerInfo: {}, finishedPlayers: new Set(), gameData: null, timer: null });
       const roomState = rooms.get(room_code);
 
       const userRow = db.prepare('SELECT avatar_seed FROM users WHERE id = ?').get(user_id);
@@ -352,7 +352,7 @@ wss.on('connection', (ws, req) => {
           const { text } = await scrapeRandom(roomLang);
           const wordCount = text.trim().split(/\s+/).length;
           const timerSeconds = Math.round(wordCount * 0.4);
-          const { corrupted_text, errors_map } = await injectErrors(text, 'moyen', [], room.text_size || 'moyen', roomLang);
+          const { corrupted_text, errors_map } = await injectErrors(text, 'moyen', [], 'moyen', roomLang);
 
           db.prepare('UPDATE vs_rooms SET corrupted_text = ?, errors_map = ?, status = ? WHERE room_code = ?')
             .run(corrupted_text, JSON.stringify(errors_map), 'playing', room_code);
@@ -388,6 +388,16 @@ wss.on('connection', (ws, req) => {
       roomState.scores[user_id] = corrections_count;
       if (corrections) roomState.corrections[user_id] = corrections;
       broadcast(roomState.players, { type: 'score_update', scores: roomState.scores });
+    }
+
+    if (msg.type === 'player_done') {
+      const { room_code, user_id, corrections } = msg;
+      const roomState = rooms.get(room_code);
+      if (!roomState) return;
+      if (corrections) roomState.corrections[user_id] = corrections;
+      roomState.finishedPlayers.add(String(user_id));
+      broadcast(roomState.players, { type: 'player_done', player_id: user_id });
+      if (roomState.finishedPlayers.size >= 2) endGame(room_code);
     }
   });
 

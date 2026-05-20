@@ -40,18 +40,9 @@ showView('view-setup');
 
 // ── Create Room ───────────────────────────────────────────────────────────────
 
-document.querySelectorAll('#vs-size-group .diff-btn').forEach(btn => {
-  btn.addEventListener('click', () => {
-    document.querySelectorAll('#vs-size-group .diff-btn').forEach(b => b.classList.remove('active'));
-    btn.classList.add('active');
-  });
-});
-
 document.getElementById('btn-create-room')?.addEventListener('click', async () => {
   try {
-    const activeSize = document.querySelector('#vs-size-group .diff-btn.active');
-    const textSize = activeSize?.dataset.size || 'moyen';
-    const data = await apiPost('/vs/create', { text_size: textSize, lang: vsLang });
+    const data = await apiPost('/vs/create', { lang: vsLang });
     roomCode = data.room_code;
     document.getElementById('display-code').textContent = roomCode;
     showView('view-waiting');
@@ -117,6 +108,12 @@ function handleMessage(msg) {
 
     case 'score_update':
       updateScores(msg.scores);
+      break;
+
+    case 'player_done':
+      if (String(msg.player_id) !== String(user.id)) {
+        document.getElementById('opponent-done-notice')?.classList.remove('hidden');
+      }
       break;
 
     case 'opponent_disconnected':
@@ -202,6 +199,13 @@ function openVsPopup(el) {
   document.getElementById('vs-popup').classList.remove('hidden');
   document.getElementById('vs-popup-input').focus();
 }
+
+document.getElementById('btn-vs-done')?.addEventListener('click', () => {
+  const btn = document.getElementById('btn-vs-done');
+  btn.disabled = true;
+  btn.textContent = "En attente de l'adversaire…";
+  ws?.send(JSON.stringify({ type: 'player_done', room_code: roomCode, user_id: user.id, corrections: vsCorrections }));
+});
 
 document.getElementById('btn-vs-validate')?.addEventListener('click', submitVsCorrection);
 document.getElementById('vs-popup-input')?.addEventListener('keydown', (e) => {

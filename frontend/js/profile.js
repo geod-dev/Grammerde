@@ -21,7 +21,6 @@ async function loadProfile() {
     renderHeader(me);
     renderStats(history);
     renderChart(history);
-    renderTextSizeStats(history);
     renderHistory(history);
   } catch (e) {
     showToast(e.message, 'error');
@@ -58,18 +57,6 @@ function renderStats(history) {
     else if (i > 0) break;
   }
   document.getElementById('stat-streak').textContent = streak + ' j';
-}
-
-function renderTextSizeStats(history) {
-  const completed = history.filter(s => s.score !== null);
-  ['court', 'moyen', 'long'].forEach(size => {
-    const games = completed.filter(s => s.text_size === size);
-    const el = document.getElementById(`size-${size}-avg`);
-    if (!el) return;
-    if (!games.length) { el.textContent = '—'; return; }
-    const avg = Math.round(games.reduce((a, s) => a + s.score, 0) / games.length);
-    el.textContent = avg + '%';
-  });
 }
 
 function renderChart(history) {

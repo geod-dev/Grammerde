@@ -56,14 +56,6 @@
       <div class="card" style="text-align:left">
         <div class="card-title" data-i18n="vs.create.title">Créer une room</div>
         <div class="form-group" style="margin-bottom:16px">
-          <label class="form-label">Taille du texte</label>
-          <div class="difficulty-group" style="grid-template-columns:repeat(3,1fr);margin-top:8px" id="vs-size-group">
-            <button class="diff-btn" data-size="court"><span class="diff-name">Court</span><span class="diff-desc">&lt; 200 mots</span></button>
-            <button class="diff-btn active" data-size="moyen"><span class="diff-name">Moyen</span><span class="diff-desc">200–500 mots</span></button>
-            <button class="diff-btn" data-size="long"><span class="diff-name">Long</span><span class="diff-desc">&gt; 500 mots</span></button>
-          </div>
-        </div>
-        <div class="form-group" style="margin-bottom:16px">
           <label class="form-label">Langue du texte</label>
           <div class="difficulty-group lang-group" style="grid-template-columns:repeat(2,1fr);margin-top:8px">
             <button class="diff-btn" data-lang="fr">
@@ -156,8 +148,10 @@
       Chargement…
     </div>
 
-    <div style="text-align:center;font-size:12px;color:var(--text-dim)" data-i18n="vs.game.hint">
-      Cliquez sur les mots pour les corriger — le plus rapide gagne !
+    <div style="display:flex;flex-direction:column;align-items:center;gap:8px;margin-top:16px">
+      <div id="opponent-done-notice" class="hidden" style="font-size:13px;color:var(--orange);font-weight:600">L'adversaire a terminé !</div>
+      <button class="btn btn-primary" id="btn-vs-done">Terminer ma correction</button>
+      <div style="font-size:12px;color:var(--text-dim)">Cliquez sur les mots pour les corriger — le plus rapide gagne !</div>
     </div>
   </div>
 </div>

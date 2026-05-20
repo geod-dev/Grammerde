@@ -31,9 +31,9 @@ async function scrapeWikipedia(lang) {
 
   let text = paragraphs.join('\n\n');
   text = cleanText(text, lang);
-  text = trimToWordCount(text, 400, 1200);
+  text = trimToWordCount(text, 250, 350);
 
-  if (text.split(/\s+/).length < 100) throw new Error('Article trop court');
+  if (text.split(/\s+/).length < 200) throw new Error('Article trop court');
   return { text, url };
 }
 
