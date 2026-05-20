@@ -91,7 +91,7 @@ app.post('/api/game/start', optionalAuth, async (req, res) => {
     const { difficulty = 'moyen', errorTypes = [], textSize = 'moyen', lang = 'fr' } = req.body;
     const { text, url } = await scrapeRandom(lang);
     const wordCount = text.trim().split(/\s+/).length;
-    const timerDuration = Math.round(wordCount * 0.5);
+    const timerDuration = Math.round(wordCount * 0.4);
     const { corrupted_text, errors_map } = await injectErrors(text, difficulty, errorTypes, textSize, lang);
 
     const stmt = db.prepare(`
@@ -351,7 +351,7 @@ wss.on('connection', (ws, req) => {
           const roomLang = room.lang || 'fr';
           const { text } = await scrapeRandom(roomLang);
           const wordCount = text.trim().split(/\s+/).length;
-          const timerSeconds = Math.round(wordCount * 0.5);
+          const timerSeconds = Math.round(wordCount * 0.4);
           const { corrupted_text, errors_map } = await injectErrors(text, 'moyen', [], room.text_size || 'moyen', roomLang);
 
           db.prepare('UPDATE vs_rooms SET corrupted_text = ?, errors_map = ?, status = ? WHERE room_code = ?')
