@@ -4,12 +4,6 @@ const openai = new OpenAI({
   apiKey: process.env.OPENAI_API_KEY,
 });
 
-const TEXT_SIZE_HINTS = {
-  court: 'environ 1 paragraphe',
-  moyen: 'environ 2 paragraphes',
-  long:  'environ 3 paragraphes',
-};
-
 // Same word-splitting logic as the frontend renderAllWords — must stay in sync
 function processSegments(segments) {
   const corrupted_text = segments.map(s => s.type === 'error' ? s.invalide : s.content).join('');
@@ -60,36 +54,63 @@ const LANG_NAMES = {
   it: 'italien',  de: 'allemand', ar: 'arabe',
 };
 
+const ERROR_EXAMPLES = {
+  fr: {
+    conjugaison: '"il mange" → invalide "il mangent" | "elles sont parties" → invalide "elles est parties" | "nous avions" → invalide "nous avons eu"',
+    accord:      '"les fleurs blanches" → invalide "blanc" | "une belle maison" → invalide "beau" | "des résultats positifs" → invalide "positive"',
+    homophone:   '"il a" → invalide "à" | "ce livre" → invalide "se" | "leur maison" → invalide "leurs" | "on" → invalide "ont" | "dans" → invalide "dent"',
+    orthographe: '"appeler" → invalide "appeller" | "occurrence" → invalide "occurence" | "charrette" → invalide "charette"',
+  },
+  en: {
+    conjugaison: '"he goes" → invalide "he go" | "they went" → invalide "they gone" | "she has" → invalide "she have"',
+    accord:      '"the results are" → invalide "is" | "they were" → invalide "was" | "some books" → invalide "book"',
+    homophone:   '"their house" → invalide "there" | "it\'s raining" → invalide "its" | "you\'re right" → invalide "your" | "to go" → invalide "too"',
+    orthographe: '"necessary" → invalide "necessery" | "separate" → invalide "seperate" | "occurrence" → invalide "occurence"',
+  },
+};
+
 export async function injectErrors(text, difficulty = 'moyen', errorTypes = [], textSize = 'moyen', lang = 'fr') {
-  const sizeHint    = TEXT_SIZE_HINTS[textSize] || TEXT_SIZE_HINTS.moyen;
   const langName    = LANG_NAMES[lang] || lang;
   const activeTypes = errorTypes.length
     ? errorTypes
     : ['conjugaison', 'accord', 'homophone', 'orthographe'];
 
-  const typesConstraint = `IMPORTANT : Tu dois UNIQUEMENT introduire des fautes de ces types, de manière équilibrée (minimum 1 par type si possible) : ${activeTypes.join(', ')}.`;
+  const examples = ERROR_EXAMPLES[lang] || ERROR_EXAMPLES.fr;
+  const examplesBlock = activeTypes
+    .map(t => `- ${t} : ${examples[t] || '(voir définition standard)'}`)
+    .join('\n');
 
-  const systemPrompt = `Tu es un assistant qui introduit des fautes dans un texte en ${langName}.
-Tu reçois un texte en français, un niveau de difficulté et des types de fautes.
-Tu retournes UNIQUEMENT un JSON valide avec deux champs :
+  const systemPrompt = `Tu es un assistant linguistique expert qui introduit des fautes dans un texte en ${langName}.
 
-- "plan" : tableau de { word, context, replacement, error_type, explanation } — liste préparatoire des mots à modifier avec 5-6 mots de contexte autour pour t'assurer de choisir les bons. Ce champ sert uniquement à ta réflexion.
-- "segments" : décomposition COMPLÈTE du texte choisi (${sizeHint}) en éléments consécutifs couvrant 100 % du texte, chaque élément étant soit :
-    { "type": "text",    "content": "..." }
-    { "type": "error",   "invalide": "...", "valide": "...", "error_type": "...", "explanation": "..." }
+FORMAT DE SORTIE : JSON avec exactement deux champs :
+- "plan" : tableau de réflexion préparatoire — liste des mots que tu vas corrompre avec leur contexte (5-6 mots autour), le remplacement prévu et le type. Sert uniquement à ta réflexion interne.
+- "segments" : décomposition COMPLÈTE et EXHAUSTIVE du texte en segments consécutifs, chaque segment étant soit :
+    { "type": "text",  "content": "..." }
+    { "type": "error", "invalide": "...", "valide": "...", "error_type": "...", "explanation": "..." }
 
-Règles :
-- Les segments text + error mis bout à bout doivent reconstituer EXACTEMENT le texte choisi, caractère par caractère
-- Chaque error porte sur UN SEUL mot (invalide et valide sont des mots isolés, sans espace ni ponctuation)
-- invalide : le mot fautif tel qu'il apparaîtra dans le texte affiché au joueur
-- valide : le mot original correct que le joueur doit retrouver
-- ${typesConstraint}
-- Introduis entre 8 et 15 fautes réparties équitablement sur tous les types autorisés
-- Ne modifie jamais les noms propres ni les chiffres`;
+RÈGLES ABSOLUES (violation = résultat inutilisable) :
+1. Les segments bout-à-bout doivent reconstituer le texte original EXACTEMENT, caractère par caractère, espaces et ponctuation inclus.
+2. "valide" DOIT être le mot EXACT copié du texte original — même casse, même forme, aucune modification.
+3. "invalide" est le mot fautif affiché au joueur à la place du mot original.
+4. "invalide" ≠ "valide" — si les deux sont identiques, la faute est invalide.
+5. Chaque error porte sur UN SEUL mot (invalide et valide = un seul mot, sans espace ni ponctuation adjacente).
+6. Ne corromps JAMAIS : noms propres, chiffres, sigles, abréviations, ponctuation.
+7. La faute doit être INCONTESTABLEMENT fausse dans son contexte — évite tout cas ambigu ou subjectif.
+8. Introduis entre 8 et 12 fautes, réparties équitablement sur les types demandés (minimum 2 par type si possible).
 
-  const userPrompt = `Types de fautes OBLIGATOIRES (tous, répartis équitablement) : ${activeTypes.join(', ')}
+EXEMPLES PAR TYPE DE FAUTE :
+${examplesBlock}
 
-Texte:
+VALIDATION obligatoire avant chaque faute :
+✓ "valide" est-il la copie exacte du mot original du texte ?
+✓ "invalide" est-il clairement et incontestablement faux dans ce contexte précis ?
+✓ Un locuteur natif de ${langName} reconnaîtrait-il cette faute sans hésitation ?
+✓ "invalide" ≠ "valide" ?
+Si une réponse est NON → ne pas inclure cette faute.`;
+
+  const userPrompt = `Types de fautes à introduire (tous obligatoires, répartis équitablement) : ${activeTypes.join(', ')}
+
+Texte :
 ${text}`;
 
   const response = await openai.chat.completions.create({
@@ -99,14 +120,22 @@ ${text}`;
       { role: 'user',   content: userPrompt },
     ],
     response_format: { type: 'json_object' },
-    temperature: 0.7,
+    temperature: 0.3,
   });
 
   const result = JSON.parse(response.choices[0].message.content);
   if (!Array.isArray(result.segments)) {
     throw new Error('Réponse OpenAI invalide');
   }
-  return processSegments(result.segments);
+
+  // Drop any error segment where invalide === valide (model validation bypass)
+  const cleaned = result.segments.map(s =>
+    s.type === 'error' && s.invalide === s.valide
+      ? { type: 'text', content: s.valide }
+      : s
+  );
+
+  return processSegments(cleaned);
 }
 
 export function validateCorrection(userAnswer, correctWord) {

@@ -2,14 +2,14 @@ import fetch from 'node-fetch';
 import { load } from 'cheerio';
 
 export async function scrapeRandom(lang = 'fr') {
-  const MAX_RETRIES = 5;
+  const MAX_RETRIES = 10;
 
   for (let attempt = 0; attempt < MAX_RETRIES; attempt++) {
     try {
       return await scrapeWikipedia(lang);
-    } catch (error) {
-      if (error.message === 'Article trop court' && attempt < MAX_RETRIES - 1) continue;
-      throw error;
+    } catch {
+      if (attempt < MAX_RETRIES - 1) continue;
+      throw new Error('Impossible de récupérer un article Wikipedia après plusieurs tentatives');
     }
   }
 }
