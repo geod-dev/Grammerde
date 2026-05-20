@@ -105,7 +105,7 @@
         "correct": "Correctement corrigé",
         "wrong": "Mal corrigé",
         "missed": "Non corrigé",
-        "valid_touched": "Mot juste modifié"
+        "valid_touched": "Mot correct modifié"
       }
     }
   },
@@ -157,7 +157,7 @@
         "correct": "Correctement corrigé",
         "wrong": "Mal corrigé",
         "missed": "Non corrigé",
-        "valid_touched": "Mot juste modifié"
+        "valid_touched": "Mot correct modifié"
       }
     },
     "tooltip": {

@@ -70,6 +70,10 @@ db.exec(`
 // Migrations for existing databases
 [
   'ALTER TABLE sessions ADD COLUMN timer_duration INTEGER DEFAULT 120',
+  'ALTER TABLE sessions ADD COLUMN text_size TEXT',
+  "ALTER TABLE vs_rooms ADD COLUMN lang TEXT DEFAULT 'fr'",
+  "ALTER TABLE sessions ADD COLUMN lang TEXT DEFAULT 'fr'",
+  "ALTER TABLE vs_rooms ADD COLUMN text_size TEXT DEFAULT 'moyen'",
 ].forEach(sql => { try { db.exec(sql); } catch {} });
 
 // Migrate session_corrections: wrong_word → span_idx

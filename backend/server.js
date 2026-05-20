@@ -47,6 +47,16 @@ app.post('/api/auth/login', async (req, res) => {
 app.get('/api/auth/me', authenticateToken, (req, res) => {
   const user = db.prepare('SELECT id, username, email, avatar_seed, created_at FROM users WHERE id = ?').get(req.user.id);
   if (!user) return res.status(404).json({ error: 'Utilisateur introuvable' });
+
+  const allRanked = db.prepare(`
+    SELECT u.id FROM users u
+    JOIN sessions s ON s.user_id = u.id
+    WHERE s.completed_at IS NOT NULL AND s.score IS NOT NULL
+    GROUP BY u.id ORDER BY AVG(s.score) DESC
+  `).all();
+  const rankIdx = allRanked.findIndex(r => r.id === user.id);
+  user.rank = rankIdx >= 0 ? rankIdx + 1 : null;
+
   res.json(user);
 });
 
@@ -70,18 +80,23 @@ app.put('/api/auth/profile', authenticateToken, (req, res) => {
 
 // ── Game ──────────────────────────────────────────────────────────────────────
 
-const TIMER_DURATIONS = { court: 60, moyen: 120, long: 180 };
+function computeTextSize(wordCount) {
+  if (wordCount < 200) return 'court';
+  if (wordCount <= 500) return 'moyen';
+  return 'long';
+}
 
 app.post('/api/game/start', optionalAuth, async (req, res) => {
   try {
     const { difficulty = 'moyen', errorTypes = [], textSize = 'moyen', lang = 'fr' } = req.body;
-    const timerDuration = TIMER_DURATIONS[textSize] || 120;
     const { text, url } = await scrapeRandom(lang);
+    const wordCount = text.trim().split(/\s+/).length;
+    const timerDuration = Math.round(wordCount * 0.6);
     const { corrupted_text, errors_map } = await injectErrors(text, difficulty, errorTypes, textSize, lang);
 
     const stmt = db.prepare(`
-      INSERT INTO sessions (user_id, source_url, original_text, corrupted_text, errors_map, difficulty, error_types, total_errors, timer_duration)
-      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+      INSERT INTO sessions (user_id, source_url, original_text, corrupted_text, errors_map, difficulty, error_types, total_errors, timer_duration, lang)
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
     `);
     const result = stmt.run(
       req.user?.id || null,
@@ -92,7 +107,8 @@ app.post('/api/game/start', optionalAuth, async (req, res) => {
       difficulty,
       JSON.stringify(errorTypes),
       errors_map.length,
-      timerDuration
+      timerDuration,
+      lang
     );
 
     res.json({
@@ -101,6 +117,7 @@ app.post('/api/game/start', optionalAuth, async (req, res) => {
       total_errors: errors_map.length,
       difficulty,
       timer_duration: timerDuration,
+      timer_seconds: timerDuration,
     });
   } catch (e) {
     console.error('game/start error:', e);
@@ -189,10 +206,13 @@ app.post('/api/game/submit', optionalAuth, (req, res) => {
 
     const score = errorsMap.length > 0 ? Math.round((correct / errorsMap.length) * 100) : 0;
 
+    const wordCount = session.original_text ? session.original_text.trim().split(/\s+/).length : 0;
+    const text_size = computeTextSize(wordCount);
+
     db.prepare(`
-      UPDATE sessions SET score = ?, corrections_count = ?, duration_seconds = ?, completed_at = CURRENT_TIMESTAMP
+      UPDATE sessions SET score = ?, corrections_count = ?, duration_seconds = ?, completed_at = CURRENT_TIMESTAMP, text_size = ?
       WHERE id = ?
-    `).run(score, correct, duration_seconds || null, session_id);
+    `).run(score, correct, duration_seconds || null, text_size, session_id);
 
     res.json({ score, correct, total: errorsMap.length, details });
   } catch (e) {
@@ -203,7 +223,7 @@ app.post('/api/game/submit', optionalAuth, (req, res) => {
 
 app.get('/api/game/history', authenticateToken, (req, res) => {
   const sessions = db.prepare(`
-    SELECT id, source_url, difficulty, score, corrections_count, total_errors, duration_seconds, completed_at
+    SELECT id, source_url, difficulty, text_size, lang, score, corrections_count, total_errors, duration_seconds, completed_at
     FROM sessions WHERE user_id = ? AND completed_at IS NOT NULL
     ORDER BY completed_at DESC LIMIT 50
   `).all(req.user.id);
@@ -212,7 +232,7 @@ app.get('/api/game/history', authenticateToken, (req, res) => {
 
 // ── Leaderboard ───────────────────────────────────────────────────────────────
 
-app.get('/api/leaderboard', (req, res) => {
+app.get('/api/leaderboard', optionalAuth, (req, res) => {
   const { period = 'all' } = req.query;
   let dateFilter = '';
   if (period === 'week') dateFilter = "AND s.completed_at >= datetime('now', '-7 days')";
@@ -229,7 +249,20 @@ app.get('/api/leaderboard', (req, res) => {
     ORDER BY avg_score DESC
     LIMIT 10
   `).all();
-  res.json(rows);
+
+  let my_rank = null;
+  if (req.user) {
+    const allRanked = db.prepare(`
+      SELECT u.id FROM users u
+      JOIN sessions s ON s.user_id = u.id
+      WHERE s.completed_at IS NOT NULL AND s.score IS NOT NULL ${dateFilter}
+      GROUP BY u.id ORDER BY AVG(s.score) DESC
+    `).all();
+    const idx = allRanked.findIndex(r => r.id === req.user.id);
+    my_rank = idx >= 0 ? idx + 1 : null;
+  }
+
+  res.json({ rows, my_rank });
 });
 
 // ── VS Mode ───────────────────────────────────────────────────────────────────
@@ -239,11 +272,11 @@ function genRoomCode() {
 }
 
 app.post('/api/vs/create', authenticateToken, (req, res) => {
-  const { difficulty = 'moyen' } = req.body;
+  const { text_size = 'moyen', lang = 'fr' } = req.body;
   let code;
   do { code = genRoomCode(); } while (db.prepare('SELECT id FROM vs_rooms WHERE room_code = ?').get(code));
 
-  db.prepare('INSERT INTO vs_rooms (room_code, player1_id, difficulty) VALUES (?, ?, ?)').run(code, req.user.id, difficulty);
+  db.prepare('INSERT INTO vs_rooms (room_code, player1_id, difficulty, lang, text_size) VALUES (?, ?, ?, ?, ?)').run(code, req.user.id, 'moyen', lang, text_size);
   res.json({ room_code: code });
 });
 
@@ -306,8 +339,11 @@ wss.on('connection', (ws, req) => {
 
       if (roomState.players.length === 2 && !roomState.gameData) {
         try {
-          const { text } = await scrapeRandom('wikipedia');
-          const { corrupted_text, errors_map } = await injectErrors(text, room.difficulty || 'moyen', [], 'moyen');
+          const roomLang = room.lang || 'fr';
+          const { text } = await scrapeRandom(roomLang);
+          const wordCount = text.trim().split(/\s+/).length;
+          const timerSeconds = Math.round(wordCount * 0.6);
+          const { corrupted_text, errors_map } = await injectErrors(text, 'moyen', [], room.text_size || 'moyen', roomLang);
 
           db.prepare('UPDATE vs_rooms SET corrupted_text = ?, errors_map = ?, status = ? WHERE room_code = ?')
             .run(corrupted_text, JSON.stringify(errors_map), 'playing', room_code);
@@ -319,10 +355,10 @@ wss.on('connection', (ws, req) => {
             corrupted_text,
             errors_map,
             total_errors: errors_map.length,
-            duration: 120,
+            timer_seconds: timerSeconds,
           });
 
-          let remaining = 120;
+          let remaining = timerSeconds;
           roomState.timer = setInterval(() => {
             remaining--;
             broadcast(roomState.players, { type: 'tick', remaining });

@@ -1,10 +1,8 @@
 import { apiGet, apiPut, getToken, getUser, updateUser, logout, showToast, updateNav } from './auth.js';
-import { loadTranslations, applyTranslations, initLangSelector, initTheme, t, getLang } from './i18n.js';
+import { initTheme } from './i18n.js';
 
 updateNav();
 initTheme();
-initLangSelector();
-loadTranslations().then(applyTranslations);
 document.getElementById('btn-logout')?.addEventListener('click', logout);
 
 if (!getToken()) {
@@ -23,6 +21,7 @@ async function loadProfile() {
     renderHeader(me);
     renderStats(history);
     renderChart(history);
+    renderTextSizeStats(history);
     renderHistory(history);
   } catch (e) {
     showToast(e.message, 'error');
@@ -33,7 +32,8 @@ function renderHeader(me) {
   const avatarUrl = `https://api.dicebear.com/7.x/pixel-art/svg?seed=${encodeURIComponent(me.avatar_seed || me.username)}`;
   document.getElementById('profile-avatar').src = avatarUrl;
   document.getElementById('profile-name').textContent = me.username;
-  document.getElementById('profile-since').textContent = t('profile.member_since', { date: new Date(me.created_at).toLocaleDateString(getLang(), { year: 'numeric', month: 'long' }) });
+  document.getElementById('profile-since').textContent = `Membre depuis ${new Date(me.created_at).toLocaleDateString('fr-FR', { year: 'numeric', month: 'long' })}`;
+  if (me.rank) document.getElementById('stat-rank').textContent = `#${me.rank}`;
 }
 
 function renderStats(history) {
@@ -57,20 +57,19 @@ function renderStats(history) {
     if (days.has(d.toDateString())) streak++;
     else if (i > 0) break;
   }
-  document.getElementById('stat-streak').textContent = streak + ' ' + t('profile.streak_unit');
+  document.getElementById('stat-streak').textContent = streak + ' j';
+}
 
-  // Best difficulty
-  const difficultyScores = {};
-  completed.forEach(s => {
-    if (!difficultyScores[s.difficulty]) difficultyScores[s.difficulty] = [];
-    difficultyScores[s.difficulty].push(s.score);
+function renderTextSizeStats(history) {
+  const completed = history.filter(s => s.score !== null);
+  ['court', 'moyen', 'long'].forEach(size => {
+    const games = completed.filter(s => s.text_size === size);
+    const el = document.getElementById(`size-${size}-avg`);
+    if (!el) return;
+    if (!games.length) { el.textContent = '—'; return; }
+    const avg = Math.round(games.reduce((a, s) => a + s.score, 0) / games.length);
+    el.textContent = avg + '%';
   });
-  const bestDiff = Object.entries(difficultyScores)
-    .map(([d, scores]) => ({ d, avg: scores.reduce((a, b) => a + b, 0) / scores.length }))
-    .sort((a, b) => b.avg - a.avg)[0];
-  document.getElementById('stat-best-diff').textContent = bestDiff
-    ? (t(`profile.diff.${bestDiff.d}`) !== `[profile.diff.${bestDiff.d}]` ? t(`profile.diff.${bestDiff.d}`) : bestDiff.d)
-    : '—';
 }
 
 function renderChart(history) {
@@ -124,16 +123,16 @@ function renderHistory(history) {
   if (!tbody) return;
 
   if (!history.length) {
-    tbody.innerHTML = `<tr><td colspan="5" style="text-align:center;color:var(--text-muted);padding:32px">${t('profile.no_history')}</td></tr>`;
+    tbody.innerHTML = '<tr><td colspan="5" style="text-align:center;color:var(--text-muted);padding:32px">Aucune partie jouée</td></tr>';
     return;
   }
 
-  const diffBadge = { facile: 'badge-easy', moyen: 'badge-medium', difficile: 'badge-hard' };
+  const langLabel = { fr: '🇫🇷 Français', en: '🇬🇧 Anglais' };
 
   tbody.innerHTML = history.map(s => `
     <tr>
-      <td>${new Date(s.completed_at).toLocaleDateString(getLang())}</td>
-      <td><span class="badge ${diffBadge[s.difficulty] || ''}">${t(`profile.diff.${s.difficulty}`) || s.difficulty}</span></td>
+      <td>${new Date(s.completed_at).toLocaleDateString('fr-FR')}</td>
+      <td>${langLabel[s.lang] || '🇫🇷 Français'}</td>
       <td style="font-family:var(--font-display);font-weight:800;color:var(--green)">${s.score !== null ? s.score + '%' : '—'}</td>
       <td>${s.corrections_count} / ${s.total_errors}</td>
       <td style="color:var(--text-dim)">${s.duration_seconds ? Math.floor(s.duration_seconds / 60) + 'min ' + (s.duration_seconds % 60) + 's' : '—'}</td>
@@ -190,7 +189,7 @@ document.getElementById('form-edit-profile')?.addEventListener('submit', async (
 
   const btn = e.target.querySelector('[type="submit"]');
   btn.disabled = true;
-  btn.textContent = t('profile.saving');
+  btn.textContent = 'Enregistrement…';
 
   try {
     const updated = await apiPut('/auth/profile', { username, avatar_seed });
@@ -198,11 +197,11 @@ document.getElementById('form-edit-profile')?.addEventListener('submit', async (
     updateNav();
     renderHeader(updated);
     closeEditModal();
-    showToast(t('profile.saved_toast'), 'success');
+    showToast('Profil mis à jour !', 'success');
   } catch (ex) {
     err.textContent = ex.message;
   } finally {
     btn.disabled = false;
-    btn.textContent = t('profile.modal.save');
+    btn.textContent = 'Enregistrer';
   }
 });

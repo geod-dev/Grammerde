@@ -1,16 +1,12 @@
 import { apiPost, getToken, getUser, showToast, updateNav } from './auth.js';
-import { loadTranslations, applyTranslations, initLangSelector, initTheme, t } from './i18n.js';
+import { initTheme } from './i18n.js';
 
 updateNav();
 initTheme();
-initLangSelector();
-loadTranslations().then(applyTranslations);
 
 if (!getToken()) {
-  loadTranslations().then(() => {
-    showToast(t('vs.toast.no_token'), 'error');
-    setTimeout(() => window.location.href = '/', 1500);
-  });
+  showToast('Connectez-vous pour jouer en VS', 'error');
+  setTimeout(() => window.location.href = '/', 1500);
 }
 
 const user = getUser();
@@ -20,6 +16,16 @@ let vsCorrections = []; // { idx, displayed_invalid, correction }
 let vsErrors = [];
 let vsCorruptedText = '';
 let gameStarted = false;
+let vsLang = 'fr';
+
+// Lang selection for VS create
+document.querySelectorAll('#view-setup .lang-group .diff-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('#view-setup .lang-group .diff-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    vsLang = btn.dataset.lang;
+  });
+});
 
 // ── Views ─────────────────────────────────────────────────────────────────────
 
@@ -34,10 +40,18 @@ showView('view-setup');
 
 // ── Create Room ───────────────────────────────────────────────────────────────
 
+document.querySelectorAll('#vs-size-group .diff-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('#vs-size-group .diff-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+  });
+});
+
 document.getElementById('btn-create-room')?.addEventListener('click', async () => {
   try {
-    const difficulty = document.getElementById('create-difficulty')?.value || 'moyen';
-    const data = await apiPost('/vs/create', { difficulty });
+    const activeSize = document.querySelector('#vs-size-group .diff-btn.active');
+    const textSize = activeSize?.dataset.size || 'moyen';
+    const data = await apiPost('/vs/create', { text_size: textSize, lang: vsLang });
     roomCode = data.room_code;
     document.getElementById('display-code').textContent = roomCode;
     showView('view-waiting');
@@ -51,7 +65,7 @@ document.getElementById('btn-create-room')?.addEventListener('click', async () =
 
 document.getElementById('btn-join-room')?.addEventListener('click', async () => {
   const code = document.getElementById('join-code')?.value.trim().toUpperCase();
-  if (!code) return showToast(t('vs.toast.enter_code'), 'error');
+  if (!code) return showToast('Entrez un code', 'error');
   try {
     await apiPost('/vs/join', { room_code: code });
     roomCode = code;
@@ -70,11 +84,11 @@ function connectWS(code) {
 
   ws.onopen = () => {
     ws.send(JSON.stringify({ type: 'join_room', room_code: code, user_id: user.id, username: user.username }));
-    document.getElementById('waiting-status').textContent = t('vs.status.connected');
+    document.getElementById('waiting-status').textContent = "Connecté — en attente d'un adversaire…";
   };
 
   ws.onmessage = (e) => handleMessage(JSON.parse(e.data));
-  ws.onclose = () => { if (!gameStarted) showToast(t('vs.toast.connection_lost'), 'error'); };
+  ws.onclose = () => { if (!gameStarted) showToast('Connexion perdue', 'error'); };
 }
 
 function handleMessage(msg) {
@@ -82,9 +96,9 @@ function handleMessage(msg) {
     case 'player_joined':
       if (msg.player_count === 2) {
         document.getElementById('waiting-code-card')?.classList.add('hidden');
-        document.getElementById('waiting-status').textContent = t('vs.status.generating');
+        document.getElementById('waiting-status').textContent = 'Génération du texte en cours…';
       } else {
-        document.getElementById('waiting-status').textContent = t('vs.status.players', { count: msg.player_count });
+        document.getElementById('waiting-status').textContent = `${msg.player_count}/2 joueur(s) connecté(s)…`;
       }
       break;
 
@@ -93,6 +107,7 @@ function handleMessage(msg) {
       vsErrors = msg.errors_map || [];
       vsCorruptedText = msg.corrupted_text;
       startGame(msg);
+      if (msg.timer_seconds) updateTimer(msg.timer_seconds);
       break;
 
     case 'tick':
@@ -104,7 +119,7 @@ function handleMessage(msg) {
       break;
 
     case 'opponent_disconnected':
-      showToast(t('vs.toast.opponent_disconnected'), 'success');
+      showToast('Adversaire déconnecté — victoire dans 10s…', 'success');
       break;
 
     case 'game_over':
@@ -136,7 +151,7 @@ function renderText(text) {
     const clean = seg.replace(/^[^a-zA-ZÀ-ÿ]+|[^a-zA-ZÀ-ÿ]+$/g, '');
     if (!clean) return seg;
     const i = idx++;
-    return `<span class="word-selectable" style="cursor:pointer" data-idx="${i}" data-word="${clean}">${seg}</span>`;
+    return `<span class="word-selectable" style="cursor:pointer" data-idx="${i}" data-word="${clean.replace(/"/g,'&quot;')}" data-orig="${seg.replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;').replace(/>/g,'&gt;')}">${seg}</span>`;
   }).join('');
 
   container.querySelectorAll('.word-selectable').forEach(el => {
@@ -175,8 +190,13 @@ function submitVsCorrection() {
   if (existingIdx >= 0) vsCorrections[existingIdx].correction = correction;
   else vsCorrections.push({ idx, displayed_invalid: displayedInvalid, correction });
 
-  vsCurrentEl.textContent = correction;
-  vsCurrentEl.classList.add('corrected');
+  const wordEl = vsCurrentEl;
+  wordEl.innerHTML = `<span>${escapeHtml(correction)}</span><button class="cancel-btn" title="Annuler">✕</button>`;
+  wordEl.classList.add('corrected');
+  wordEl.querySelector('.cancel-btn').addEventListener('click', (e) => {
+    e.stopPropagation();
+    cancelVsCorrection(wordEl);
+  });
   document.getElementById('vs-popup').classList.add('hidden');
 
   ws?.send(JSON.stringify({
@@ -187,6 +207,20 @@ function submitVsCorrection() {
   }));
 
   document.getElementById('my-score').textContent = vsCorrections.length;
+}
+
+function cancelVsCorrection(el) {
+  const idx = el.dataset.idx;
+  vsCorrections = vsCorrections.filter(c => c.idx !== idx);
+  el.textContent = el.dataset.orig || el.dataset.word;
+  el.classList.remove('corrected');
+  document.getElementById('my-score').textContent = vsCorrections.length;
+  ws?.send(JSON.stringify({
+    type: 'correction',
+    room_code: roomCode,
+    user_id: user.id,
+    corrections_count: vsCorrections.length,
+  }));
 }
 
 function updateTimer(remaining) {
@@ -217,7 +251,7 @@ function showGameOver(msg) {
 
   const isWinner = String(msg.winner_id) === String(user.id);
   const titleEl = document.getElementById('finish-title');
-  titleEl.textContent = isWinner ? t('vs.finish.victory') : t('vs.finish.defeat');
+  titleEl.textContent = isWinner ? 'Victoire !' : 'Défaite';
   titleEl.style.color = isWinner ? 'var(--green)' : 'var(--red)';
 
   const opId = Object.keys(msg.scores).find(id => id != user.id);
@@ -241,7 +275,7 @@ function renderVsResults(opponentCount) {
   const applied = vsCorrections.length;
   const score = vsErrors.length ? Math.round((valid / vsErrors.length) * 100) : 0;
 
-  document.getElementById('finish-my-score').textContent = t('vs.finish.score_summary', { score, correct: valid, total: vsErrors.length });
+  document.getElementById('finish-my-score').textContent = `${score}% — ${valid} / ${vsErrors.length} fautes corrigées correctement`;
   document.getElementById('finish-stat-applied').textContent = applied;
   document.getElementById('finish-stat-valid').textContent = valid;
   document.getElementById('finish-stat-wrong').textContent = wrong;
@@ -276,13 +310,13 @@ function renderVsResults(opponentCount) {
       else if (normalizeStr(userAnswer) === normalizeStr(detail.original_valid)) { cls = 'badge-result-green';  display = userAnswer; }
       else                                                                   { cls = 'badge-result-orange'; display = userAnswer; }
 
-      const tip = `<span class="tooltip-row"><span class="tooltip-label">${t('vs.tooltip.invalid')}</span><span>${escapeHtml(detail.displayed_invalid)}</span></span><span class="tooltip-row"><span class="tooltip-label">${t('vs.tooltip.your_answer')}</span><span>${escapeHtml(userAnswer || '—')}</span></span><span class="tooltip-row"><span class="tooltip-label">${t('vs.tooltip.valid')}</span><span>${escapeHtml(detail.original_valid)}</span></span><span class="tooltip-divider"></span><span class="tooltip-row"><span class="tooltip-label">${escapeHtml(detail.error_type)}</span><span>${escapeHtml(detail.explanation || '')}</span></span>`;
+      const tip = `<span class="tooltip-row"><span class="tooltip-label">Mot invalide</span><span>${escapeHtml(detail.displayed_invalid)}</span></span><span class="tooltip-row"><span class="tooltip-label">Votre réponse</span><span>${escapeHtml(userAnswer || '—')}</span></span><span class="tooltip-row"><span class="tooltip-label">Mot valide</span><span>${escapeHtml(detail.original_valid)}</span></span><span class="tooltip-divider"></span><span class="tooltip-row"><span class="tooltip-label">${escapeHtml(detail.error_type)}</span><span>${escapeHtml(detail.explanation || '')}</span></span>`;
       return `<span class="result-badge ${cls}">${escapeHtml(display)}<span class="result-tooltip">${tip}</span></span>`;
     }
 
     if (touchedCorrectSet.has(currentIdx)) {
       const c = vsCorrections.find(x => parseInt(x.idx) === currentIdx);
-      const tip = `<span class="tooltip-row"><span class="tooltip-label">${t('vs.tooltip.correct_word')}</span><span>${escapeHtml(seg)}</span></span><span class="tooltip-row"><span class="tooltip-label">${t('vs.tooltip.your_edit')}</span><span>${escapeHtml(c?.correction || '—')}</span></span>`;
+      const tip = `<span class="tooltip-row"><span class="tooltip-label">Mot correct</span><span>${escapeHtml(seg)}</span></span><span class="tooltip-row"><span class="tooltip-label">Votre modification</span><span>${escapeHtml(c?.correction || '—')}</span></span>`;
       return `<span class="result-badge badge-result-blue">${escapeHtml(c?.correction || seg)}<span class="result-tooltip">${tip}</span></span>`;
     }
 

@@ -1158,6 +1158,23 @@ footer {
   .game-layout { padding: 16px; }
 }
 
+/* ── Cancel Button ──────────────────────────────────────────────────────── */
+
+.cancel-btn {
+  background: none;
+  border: none;
+  color: inherit;
+  font-size: 10px;
+  cursor: pointer;
+  padding: 0 2px;
+  margin-left: 3px;
+  opacity: 0.5;
+  vertical-align: middle;
+  line-height: 1;
+  transition: opacity 0.15s;
+}
+.cancel-btn:hover { opacity: 1; }
+
 /* ── Utility ─────────────────────────────────────────────────────────────── */
 
 .hidden { display: none !important; }

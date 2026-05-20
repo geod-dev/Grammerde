@@ -1,10 +1,8 @@
 import { apiPost, showToast, updateNav } from './auth.js';
-import { loadTranslations, applyTranslations, initLangSelector, initTheme, t } from './i18n.js';
+import { initTheme } from './i18n.js';
 
 updateNav();
 initTheme();
-initLangSelector();
-loadTranslations().then(applyTranslations);
 
 const gameDataRaw = sessionStorage.getItem('gameData');
 if (!gameDataRaw) { window.location.href = '/'; }
@@ -60,7 +58,7 @@ function renderAllWords(text) {
     const clean = seg.replace(/^[^a-zA-ZÀ-ÿ]+|[^a-zA-ZÀ-ÿ]+$/g, '');
     if (!clean) return seg;
     const i = idx++;
-    return `<span class="word-selectable" data-idx="${i}" data-word="${clean}">${seg}</span>`;
+    return `<span class="word-selectable" data-idx="${i}" data-word="${escapeHtml(clean)}" data-orig="${escapeHtml(seg)}">${seg}</span>`;
   }).join('');
 
   container.querySelectorAll('.word-selectable').forEach(el => {
@@ -115,9 +113,14 @@ async function submitCorrection() {
   if (existingIdx >= 0) corrections[existingIdx].correction = correction;
   else corrections.push({ idx, wrong_word: wrongWord, correction });
 
-  // Visual: mark span as corrected (blue badge)
-  currentErrorWord.textContent = correction;
-  currentErrorWord.classList.add('corrected');
+  // Visual: mark span as corrected (blue badge) with cancel button
+  const wordEl = currentErrorWord;
+  wordEl.innerHTML = `<span>${escapeHtml(correction)}</span><button class="cancel-btn" title="Annuler">✕</button>`;
+  wordEl.classList.add('corrected');
+  wordEl.querySelector('.cancel-btn').addEventListener('click', (e) => {
+    e.stopPropagation();
+    cancelCorrection(wordEl);
+  });
 
   closePopup();
   updateProgress();
@@ -132,12 +135,21 @@ async function submitCorrection() {
   } catch { /* non-blocking — server fallback handles it at submit */ }
 }
 
+function cancelCorrection(el) {
+  const idx = el.dataset.idx;
+  corrections = corrections.filter(c => c.idx !== idx);
+  el.textContent = el.dataset.orig || el.dataset.word;
+  el.classList.remove('corrected');
+  updateProgress();
+}
+
 function updateProgress() {
   const total = gameData.total_errors;
   const done = Math.min(corrections.length, total);
   const pct = total ? (done / total) * 100 : 0;
   document.getElementById('progress-fill').style.width = Math.min(pct, 100) + '%';
-  document.getElementById('progress-label').textContent = t('game.progress', { applied: corrections.length, s: corrections.length > 1 ? 's' : '', total, s2: total > 1 ? 's' : '' });
+  const n = corrections.length;
+  document.getElementById('progress-label').textContent = `${n} mot${n > 1 ? 's' : ''} modifié${n > 1 ? 's' : ''} · ${total} faute${total > 1 ? 's' : ''} cachée${total > 1 ? 's' : ''}`;
   document.getElementById('stat-corrections').textContent = corrections.length;
   document.getElementById('stat-total').textContent = total;
 }
@@ -152,7 +164,7 @@ document.getElementById('btn-submit')?.addEventListener('click', async () => {
   const duration = Math.round((Date.now() - startTime) / 1000);
   const btn = document.getElementById('btn-submit');
   btn.disabled = true;
-  btn.textContent = t('game.btn_correcting');
+  btn.textContent = 'Correction…';
 
   const correctionsPayload = corrections.map(c => ({ span_idx: parseInt(c.idx), correction: c.correction }));
 
@@ -169,7 +181,7 @@ document.getElementById('btn-submit')?.addEventListener('click', async () => {
     showToast(e.message, 'error');
     gameOver = false;
     btn.disabled = false;
-    btn.textContent = t('game.btn_submit');
+    btn.textContent = 'Terminer et voir le score';
   }
 });
 
@@ -190,7 +202,7 @@ function renderResults(result) {
   rv.classList.remove('hidden');
 
   document.getElementById('score-value').textContent = result.score + '%';
-  document.getElementById('score-summary').textContent = t('game.score_summary', { correct: result.correct, total: result.total });
+  document.getElementById('score-summary').textContent = `${result.correct} / ${result.total} fautes corrigées correctement`;
 
   // All maps keyed by span_idx (integer) — no word-text ambiguity
   const detailMap = new Map();
@@ -231,13 +243,13 @@ function renderResults(result) {
         cls = 'badge-result-orange';
         display = userAnswer;
       }
-      const tip = `<span class="tooltip-row"><span class="tooltip-label">${t('game.tooltip.invalid')}</span><span>${escapeHtml(detail.displayed_invalid)}</span></span><span class="tooltip-row"><span class="tooltip-label">${t('game.tooltip.your_answer')}</span><span>${escapeHtml(userAnswer || '—')}</span></span><span class="tooltip-row"><span class="tooltip-label">${t('game.tooltip.valid')}</span><span>${escapeHtml(detail.original_valid)}</span></span><span class="tooltip-divider"></span><span class="tooltip-row"><span class="tooltip-label">${escapeHtml(detail.error_type)}</span><span>${escapeHtml(detail.explanation || '')}</span></span>`;
+      const tip = `<span class="tooltip-row"><span class="tooltip-label">Mot invalide</span><span>${escapeHtml(detail.displayed_invalid)}</span></span><span class="tooltip-row"><span class="tooltip-label">Votre réponse</span><span>${escapeHtml(userAnswer || '—')}</span></span><span class="tooltip-row"><span class="tooltip-label">Mot valide</span><span>${escapeHtml(detail.original_valid)}</span></span><span class="tooltip-divider"></span><span class="tooltip-row"><span class="tooltip-label">${escapeHtml(detail.error_type)}</span><span>${escapeHtml(detail.explanation || '')}</span></span>`;
       return `<span class="result-badge ${cls}">${escapeHtml(display)}<span class="result-tooltip">${tip}</span></span>`;
     }
 
     if (touchedCorrectSet.has(currentIdx)) {
       const c = corrections.find(x => parseInt(x.idx) === currentIdx);
-      const tip = `<span class="tooltip-row"><span class="tooltip-label">${t('game.tooltip.correct_word')}</span><span>${escapeHtml(seg)}</span></span><span class="tooltip-row"><span class="tooltip-label">${t('game.tooltip.your_edit')}</span><span>${escapeHtml(c?.correction || '—')}</span></span>`;
+      const tip = `<span class="tooltip-row"><span class="tooltip-label">Mot correct</span><span>${escapeHtml(seg)}</span></span><span class="tooltip-row"><span class="tooltip-label">Votre modification</span><span>${escapeHtml(c?.correction || '—')}</span></span>`;
       return `<span class="result-badge badge-result-blue">${escapeHtml(c?.correction || seg)}<span class="result-tooltip">${tip}</span></span>`;
     }
 
@@ -257,6 +269,7 @@ document.getElementById('btn-replay')?.addEventListener('click', () => {
 renderAllWords(gameData.corrupted_text);
 updateProgress();
 
-if (gameData.timer_duration) {
-  startTimer(gameData.timer_duration);
+const timerSecs = gameData.timer_seconds || gameData.timer_duration;
+if (timerSecs) {
+  startTimer(timerSecs);
 }

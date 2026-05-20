@@ -18,13 +18,7 @@
       <svg class="icon-sun" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>
       <svg class="icon-moon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
     </button>
-    <div class="lang-selector">
-      <button class="lang-btn" id="lang-btn">
-        <img id="lang-flag-current" src="/public/fr.png" alt="fr" class="lang-flag">
-      </button>
-      <div class="lang-dropdown hidden" id="lang-dropdown"></div>
-    </div>
-    <a href="/" class="btn btn-ghost" data-i18n="nav.home">← Accueil</a>
+    <a href="/" class="btn btn-ghost">← Accueil</a>
     <span class="btn btn-ghost hidden" id="user-menu" style="cursor:default">
       <span id="nav-username"></span>
     </span>
@@ -62,8 +56,8 @@
       <div class="stat-card-label" data-i18n="profile.stats.streak">Streak</div>
     </div>
     <div class="stat-card">
-      <div class="stat-card-value" id="stat-best-diff" style="font-size:1.5rem">—</div>
-      <div class="stat-card-label" data-i18n="profile.stats.best_diff">Meilleure difficulté</div>
+      <div class="stat-card-value" id="stat-rank" style="font-size:1.5rem">—</div>
+      <div class="stat-card-label">Position au classement</div>
     </div>
   </div>
 
@@ -72,16 +66,33 @@
     <canvas id="score-chart"></canvas>
   </div>
 
+  <!-- Text size stats -->
+  <h2 style="font-family:var(--font-display);font-size:1.3rem;margin-bottom:16px">Scores par taille de texte</h2>
+  <div class="stats-grid" style="margin-bottom:40px">
+    <div class="stat-card">
+      <div class="stat-card-value" id="size-court-avg" style="color:var(--blue)">—</div>
+      <div class="stat-card-label">Court</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-card-value" id="size-moyen-avg" style="color:var(--green)">—</div>
+      <div class="stat-card-label">Moyen</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-card-value" id="size-long-avg" style="color:var(--orange)">—</div>
+      <div class="stat-card-label">Long</div>
+    </div>
+  </div>
+
   <!-- History -->
-  <h2 style="font-family:var(--font-display);font-size:1.3rem;margin-bottom:16px" data-i18n="profile.history.title">Historique</h2>
+  <h2 style="font-family:var(--font-display);font-size:1.3rem;margin-bottom:16px">Historique</h2>
   <table class="history-table">
     <thead>
       <tr>
-        <th data-i18n="profile.history.col_date">Date</th>
-        <th data-i18n="profile.history.col_difficulty">Difficulté</th>
-        <th data-i18n="profile.history.col_score">Score</th>
-        <th data-i18n="profile.history.col_corrections">Corrections</th>
-        <th data-i18n="profile.history.col_duration">Durée</th>
+        <th>Date</th>
+        <th>Langue</th>
+        <th>Score</th>
+        <th>Corrections</th>
+        <th>Durée</th>
       </tr>
     </thead>
     <tbody id="history-tbody">

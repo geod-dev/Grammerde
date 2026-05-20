@@ -1,16 +1,15 @@
 import { apiPost, apiGet, getToken, setSession, logout, updateNav, showToast } from './auth.js';
-import { getLang, loadTranslations, applyTranslations, initLangSelector, initTheme } from './i18n.js';
+import { initTheme } from './i18n.js';
 
 updateNav();
 initTheme();
-initLangSelector();
-loadTranslations().then(applyTranslations);
 document.getElementById('btn-logout')?.addEventListener('click', logout);
 
 // ── Configurator ─────────────────────────────────────────────────────────────
 let config = {
   textSize: 'moyen',
   errorTypes: ['conjugaison', 'accord', 'homophone', 'orthographe'],
+  lang: null,
 };
 
 // Text size buttons
@@ -19,6 +18,17 @@ document.querySelectorAll('.size-group .diff-btn').forEach(btn => {
     document.querySelectorAll('.size-group .diff-btn').forEach(b => b.classList.remove('active'));
     btn.classList.add('active');
     config.textSize = btn.dataset.size;
+  });
+});
+
+// Lang selection
+document.querySelectorAll('.lang-group .diff-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('.lang-group .diff-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    config.lang = btn.dataset.lang;
+    const launchBtn = document.getElementById('btn-launch');
+    if (launchBtn) launchBtn.disabled = false;
   });
 });
 
@@ -41,7 +51,8 @@ document.getElementById('btn-launch')?.addEventListener('click', async () => {
   btn.disabled = true;
   btn.textContent = 'Chargement…';
   try {
-    const data = await apiPost('/game/start', { ...config, lang: getLang() });
+    if (!config.lang) { showToast('Choisissez une langue', 'error'); btn.disabled = false; btn.textContent = 'Lancer la partie'; return; }
+    const data = await apiPost('/game/start', { textSize: config.textSize, errorTypes: config.errorTypes, lang: config.lang });
     sessionStorage.setItem('gameData', JSON.stringify(data));
     window.location.href = '/game.html';
   } catch (e) {
@@ -64,7 +75,7 @@ let lbPeriod = 'all';
 
 async function loadLeaderboard() {
   try {
-    const rows = await apiGet(`/leaderboard?period=${lbPeriod}`);
+    const { rows } = await apiGet(`/leaderboard?period=${lbPeriod}`);
     renderLeaderboard(rows);
   } catch { /* ignore */ }
 }
