@@ -82,6 +82,26 @@
       <a href="/profile.html" class="btn btn-outline btn-lg" data-i18n="game.results.btn_profile">Voir mon profil</a>
     </div>
 
+    <h2 style="font-family:var(--font-display);font-size:1.3rem;font-weight:700;margin-bottom:16px">Mes statistiques</h2>
+    <div class="stats-grid" style="margin-bottom:32px">
+      <div class="stat-card">
+        <div class="stat-card-value" id="result-stat-applied">—</div>
+        <div class="stat-card-label">Corrections appliquées</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-card-value" style="color:var(--green)" id="result-stat-valid">—</div>
+        <div class="stat-card-label">Valides</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-card-value" style="color:var(--orange)" id="result-stat-wrong">—</div>
+        <div class="stat-card-label">Fausses</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-card-value" style="color:var(--red)" id="result-stat-missed">—</div>
+        <div class="stat-card-label">Oubliées</div>
+      </div>
+    </div>
+
     <h2 style="font-family:var(--font-display);font-size:1.3rem;font-weight:700;margin-bottom:16px" data-i18n="game.results.detail_title">Détail du texte</h2>
 
     <div class="results-legend">

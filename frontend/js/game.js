@@ -204,6 +204,18 @@ function renderResults(result) {
   document.getElementById('score-value').textContent = result.score + '%';
   document.getElementById('score-summary').textContent = `${result.correct} / ${result.total} fautes corrigées correctement`;
 
+  let valid = 0, wrong = 0, missed = 0;
+  result.details.forEach(d => {
+    if (!d.user_answer) missed++;
+    else if (d.is_correct) valid++;
+    else wrong++;
+  });
+  const applied = corrections.length;
+  document.getElementById('result-stat-applied').textContent = applied;
+  document.getElementById('result-stat-valid').textContent = valid;
+  document.getElementById('result-stat-wrong').textContent = wrong;
+  document.getElementById('result-stat-missed').textContent = missed;
+
   // All maps keyed by span_idx (integer) — no word-text ambiguity
   const detailMap = new Map();
   result.details.forEach(d => detailMap.set(d.span_idx, d));
