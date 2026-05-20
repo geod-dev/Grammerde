@@ -97,6 +97,7 @@ function handleMessage(msg) {
       if (msg.player_count === 2) {
         document.getElementById('waiting-code-card')?.classList.add('hidden');
         document.getElementById('waiting-status').textContent = 'Génération du texte en cours…';
+        if (msg.players) populateWaitingPlayers(msg.players);
       } else {
         document.getElementById('waiting-status').textContent = `${msg.player_count}/2 joueur(s) connecté(s)…`;
       }
@@ -134,9 +135,41 @@ function handleMessage(msg) {
 
 // ── Game ──────────────────────────────────────────────────────────────────────
 
+function avatarUrl(seed) {
+  return `https://api.dicebear.com/7.x/pixel-art/svg?seed=${encodeURIComponent(seed || 'default')}`;
+}
+
+function populateWaitingPlayers(players) {
+  const me = players.find(p => String(p.id) === String(user.id));
+  const op = players.find(p => String(p.id) !== String(user.id));
+  const el = document.getElementById('waiting-players');
+  if (!el) return;
+  el.classList.remove('hidden');
+  el.style.display = 'flex';
+  if (me) {
+    document.getElementById('waiting-my-avatar').src = avatarUrl(me.avatar_seed || me.username);
+    document.getElementById('waiting-my-name').textContent = me.username;
+  }
+  if (op) {
+    document.getElementById('waiting-op-avatar').src = avatarUrl(op.avatar_seed || op.username);
+    document.getElementById('waiting-op-name').textContent = op.username;
+  }
+}
+
 function startGame(msg) {
   showView('view-game');
-  document.getElementById('my-username').textContent = user.username;
+
+  const me = msg.players?.find(p => String(p.id) === String(user.id));
+  const op = msg.players?.find(p => String(p.id) !== String(user.id));
+
+  document.getElementById('my-username').textContent = me?.username || user.username;
+  document.getElementById('my-avatar').src = avatarUrl(me?.avatar_seed || user.username);
+
+  if (op) {
+    document.getElementById('opponent-username').textContent = op.username;
+    document.getElementById('opponent-avatar').src = avatarUrl(op.avatar_seed || op.username);
+  }
+
   vsCorrections = [];
   renderText(msg.corrupted_text);
   updateScores({});
@@ -204,6 +237,7 @@ function submitVsCorrection() {
     room_code: roomCode,
     user_id: user.id,
     corrections_count: vsCorrections.length,
+    corrections: vsCorrections,
   }));
 
   document.getElementById('my-score').textContent = vsCorrections.length;
@@ -220,6 +254,7 @@ function cancelVsCorrection(el) {
     room_code: roomCode,
     user_id: user.id,
     corrections_count: vsCorrections.length,
+    corrections: vsCorrections,
   }));
 }
 

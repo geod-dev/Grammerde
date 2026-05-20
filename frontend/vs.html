@@ -108,6 +108,18 @@
       <div class="room-code-display" id="display-code">——</div>
       <p style="font-size:13px;color:var(--text-dim)" data-i18n="vs.waiting.share_hint">Partagez ce code à votre adversaire</p>
     </div>
+
+    <div id="waiting-players" class="hidden" style="display:flex;gap:40px;justify-content:center;align-items:center;margin-top:24px">
+      <div style="text-align:center">
+        <img class="vs-avatar" id="waiting-my-avatar" src="" alt="">
+        <div class="vs-player-name" id="waiting-my-name" style="margin-top:8px"></div>
+      </div>
+      <div style="font-size:22px;color:var(--text-muted)">⚔</div>
+      <div style="text-align:center">
+        <img class="vs-avatar" id="waiting-op-avatar" src="" alt="">
+        <div class="vs-player-name" id="waiting-op-name" style="margin-top:8px"></div>
+      </div>
+    </div>
   </div>
 </div>
 
@@ -118,6 +130,7 @@
     <!-- Scores header -->
     <div class="vs-scores">
       <div class="vs-player me">
+        <img class="vs-avatar" id="my-avatar" src="" alt="">
         <div>
           <div class="vs-player-name" id="my-username">Vous</div>
           <div class="vs-player-score" id="my-score">0</div>
@@ -134,6 +147,7 @@
           <div class="vs-player-name" id="opponent-username">Adversaire</div>
           <div class="vs-player-score" id="opponent-score">0</div>
         </div>
+        <img class="vs-avatar" id="opponent-avatar" src="" alt="">
       </div>
     </div>
 

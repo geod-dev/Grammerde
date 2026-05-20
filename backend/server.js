@@ -323,19 +323,28 @@ wss.on('connection', (ws, req) => {
       const room = db.prepare('SELECT * FROM vs_rooms WHERE room_code = ?').get(room_code);
       if (!room) return ws.send(JSON.stringify({ type: 'error', message: 'Room introuvable' }));
 
-      if (!rooms.has(room_code)) rooms.set(room_code, { players: [], scores: {}, gameData: null, timer: null });
+      if (!rooms.has(room_code)) rooms.set(room_code, { players: [], scores: {}, corrections: {}, playerInfo: {}, gameData: null, timer: null });
       const roomState = rooms.get(room_code);
 
+      const userRow = db.prepare('SELECT avatar_seed FROM users WHERE id = ?').get(user_id);
       ws.roomCode = room_code;
       ws.userId = user_id;
       ws.username = username;
+      ws.avatarSeed = userRow?.avatar_seed || username;
 
       const existing = roomState.players.findIndex(p => p.userId === user_id);
       if (existing >= 0) roomState.players[existing] = ws;
       else roomState.players.push(ws);
 
       roomState.scores[user_id] = roomState.scores[user_id] || 0;
-      broadcast(roomState.players, { type: 'player_joined', username, player_count: roomState.players.length });
+      roomState.playerInfo[user_id] = { id: user_id, username, avatar_seed: ws.avatarSeed };
+
+      broadcast(roomState.players, {
+        type: 'player_joined',
+        username,
+        player_count: roomState.players.length,
+        players: Object.values(roomState.playerInfo),
+      });
 
       if (roomState.players.length === 2 && !roomState.gameData) {
         try {
@@ -356,6 +365,7 @@ wss.on('connection', (ws, req) => {
             errors_map,
             total_errors: errors_map.length,
             timer_seconds: timerSeconds,
+            players: Object.values(roomState.playerInfo),
           });
 
           let remaining = timerSeconds;
@@ -372,10 +382,11 @@ wss.on('connection', (ws, req) => {
     }
 
     if (msg.type === 'correction') {
-      const { room_code, user_id, corrections_count } = msg;
+      const { room_code, user_id, corrections_count, corrections } = msg;
       const roomState = rooms.get(room_code);
       if (!roomState) return;
       roomState.scores[user_id] = corrections_count;
+      if (corrections) roomState.corrections[user_id] = corrections;
       broadcast(roomState.players, { type: 'score_update', scores: roomState.scores });
     }
   });
@@ -402,16 +413,47 @@ function endGame(roomCode, disconnectedUserId = null) {
   clearInterval(roomState.timer);
 
   const scores = roomState.scores;
+  const errors_map = roomState.gameData?.errors_map || [];
+  const playerScores = {};
+
+  for (const [userId, playerCorrections] of Object.entries(roomState.corrections || {})) {
+    const corrMap = new Map((playerCorrections || []).map(c => [parseInt(c.idx), c.correction]));
+    let valid = 0, wrong = 0, missed = 0;
+    errors_map.forEach(err => {
+      const answer = corrMap.get(err.span_idx);
+      if (!answer) { missed++; return; }
+      if (validateCorrection(answer, err.original_valid)) valid++;
+      else wrong++;
+    });
+    const applied = (playerCorrections || []).length;
+    const ratio = applied > 0 ? valid / applied : 0;
+    playerScores[userId] = { valid, wrong, missed, applied, ratio };
+  }
+
   let winnerId = null;
   if (disconnectedUserId) {
     const remaining = roomState.players.find(p => p.userId !== disconnectedUserId);
     winnerId = remaining?.userId;
   } else {
-    winnerId = Object.entries(scores).sort(([, a], [, b]) => b - a)[0]?.[0];
+    const playerIds = Object.keys(playerScores);
+    if (playerIds.length === 2) {
+      const [p1, p2] = playerIds;
+      const s1 = playerScores[p1] || { ratio: 0, wrong: 0, missed: 0 };
+      const s2 = playerScores[p2] || { ratio: 0, wrong: 0, missed: 0 };
+      if (s1.ratio !== s2.ratio) {
+        winnerId = s1.ratio > s2.ratio ? p1 : p2;
+      } else {
+        const t1 = s1.wrong - s1.missed;
+        const t2 = s2.wrong - s2.missed;
+        winnerId = t1 >= t2 ? p1 : p2;
+      }
+    } else {
+      winnerId = Object.entries(scores).sort(([, a], [, b]) => b - a)[0]?.[0];
+    }
   }
 
   db.prepare('UPDATE vs_rooms SET status = ?, winner_id = ? WHERE room_code = ?').run('finished', winnerId, roomCode);
-  broadcast(roomState.players, { type: 'game_over', scores, winner_id: winnerId });
+  broadcast(roomState.players, { type: 'game_over', scores, player_scores: playerScores, winner_id: winnerId });
   rooms.delete(roomCode);
 }
 

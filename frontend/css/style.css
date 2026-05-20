@@ -1158,6 +1158,17 @@ footer {
   .game-layout { padding: 16px; }
 }
 
+/* ── VS Avatar ──────────────────────────────────────────────────────────── */
+
+.vs-avatar {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  border: 2px solid var(--border);
+  background: var(--surface-2);
+  flex-shrink: 0;
+}
+
 /* ── Cancel Button ──────────────────────────────────────────────────────── */
 
 .cancel-btn {
