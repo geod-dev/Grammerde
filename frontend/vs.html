@@ -86,6 +86,27 @@
         <button class="btn btn-outline" style="width:100%" id="btn-join-room" data-i18n="vs.join.btn">Rejoindre</button>
       </div>
     </div>
+
+    <!-- VS Leaderboard -->
+    <div style="max-width:600px;margin:40px auto 0">
+      <div class="section-header">
+        <div class="section-title">Classement VS</div>
+      </div>
+      <div id="vs-leaderboard-wrap">
+        <table class="leaderboard-table" id="vs-leaderboard-table">
+          <thead>
+            <tr>
+              <th>#</th>
+              <th>Joueur</th>
+              <th>Victoires</th>
+            </tr>
+          </thead>
+          <tbody id="vs-leaderboard-body">
+            <tr><td colspan="3" style="text-align:center;color:var(--text-dim);padding:24px">Chargement…</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
   </div>
 </div>
 
@@ -131,7 +152,8 @@
 
       <div class="vs-center">
         <div class="timer-value" id="vs-timer">120</div>
-        <div class="timer-label" data-i18n="vs.game.timer_label">secondes</div>
+        <div class="timer-label">secondes</div>
+        <div id="vs-total-errors" style="font-size:12px;color:var(--text-muted);margin-top:6px;font-weight:500"></div>
       </div>
 
       <div class="vs-player opponent" style="justify-content:flex-end">

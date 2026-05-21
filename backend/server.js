@@ -265,6 +265,33 @@ app.get('/api/leaderboard', optionalAuth, (req, res) => {
   res.json({ rows, my_rank });
 });
 
+app.get('/api/leaderboard/vs', optionalAuth, (req, res) => {
+  const rows = db.prepare(`
+    SELECT u.id, u.username, u.avatar_seed, COUNT(r.id) as wins
+    FROM users u
+    JOIN vs_rooms r ON r.winner_id = u.id
+    WHERE r.status = 'finished'
+    GROUP BY u.id
+    ORDER BY wins DESC
+    LIMIT 10
+  `).all();
+
+  let my_rank = null;
+  if (req.user) {
+    const allRanked = db.prepare(`
+      SELECT u.id FROM users u
+      JOIN vs_rooms r ON r.winner_id = u.id
+      WHERE r.status = 'finished'
+      GROUP BY u.id
+      ORDER BY COUNT(r.id) DESC
+    `).all();
+    const idx = allRanked.findIndex(r => r.id === req.user.id);
+    my_rank = idx >= 0 ? idx + 1 : null;
+  }
+
+  res.json({ rows, my_rank });
+});
+
 // ── VS Mode ───────────────────────────────────────────────────────────────────
 
 function genRoomCode() {

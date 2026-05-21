@@ -167,6 +167,11 @@ function startGame(msg) {
     document.getElementById('opponent-avatar').src = avatarUrl(op.avatar_seed || op.username);
   }
 
+  const totalEl = document.getElementById('vs-total-errors');
+  if (totalEl && msg.total_errors != null) {
+    totalEl.textContent = `${msg.total_errors} fautes cachées`;
+  }
+
   vsCorrections = [];
   renderText(msg.corrupted_text);
   updateScores({});
@@ -384,3 +389,40 @@ function renderOpponentResults(opCorrections, opScore) {
 }
 
 document.getElementById('btn-play-again')?.addEventListener('click', () => window.location.href = '/');
+
+// ── VS Leaderboard ────────────────────────────────────────────────────────────
+
+function avatarUrlLb(seed) {
+  return `https://api.dicebear.com/7.x/pixel-art/svg?seed=${encodeURIComponent(seed || 'default')}`;
+}
+
+async function loadVsLeaderboard() {
+  const tbody = document.getElementById('vs-leaderboard-body');
+  if (!tbody) return;
+  try {
+    const res = await fetch('/api/leaderboard/vs', {
+      headers: getToken() ? { Authorization: 'Bearer ' + getToken() } : {},
+    });
+    const data = await res.json();
+    if (!data.rows || data.rows.length === 0) {
+      tbody.innerHTML = '<tr><td colspan="3" style="text-align:center;color:var(--text-dim);padding:24px">Aucune partie VS terminée pour l\'instant</td></tr>';
+      return;
+    }
+    tbody.innerHTML = data.rows.map((row, i) => {
+      const rank = i + 1;
+      const rankClass = rank === 1 ? 'top-1' : rank === 2 ? 'top-2' : rank === 3 ? 'top-3' : '';
+      return `<tr>
+        <td class="lb-rank ${rankClass}">#${rank}</td>
+        <td><div class="lb-user">
+          <img class="lb-avatar" src="${avatarUrlLb(row.avatar_seed || row.username)}" alt="">
+          <span class="lb-username">${escapeHtml(row.username)}</span>
+        </div></td>
+        <td class="lb-score">${row.wins}</td>
+      </tr>`;
+    }).join('');
+  } catch {
+    tbody.innerHTML = '<tr><td colspan="3" style="text-align:center;color:var(--text-dim);padding:24px">Impossible de charger le classement</td></tr>';
+  }
+}
+
+loadVsLeaderboard();
