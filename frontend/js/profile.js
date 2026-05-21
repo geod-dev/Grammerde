@@ -67,50 +67,91 @@ function renderChart(history, vsHistory) {
   const canvas = document.getElementById('score-chart');
   if (!canvas || !window.Chart) return;
 
-  // Merge solo + VS games chronologically
-  const soloGames = history
-    .filter(s => s.score !== null)
-    .map(s => ({ date: new Date(s.completed_at), solo: s.score, vs: null }));
-  const vsGames = (vsHistory || [])
-    .filter(g => g.score !== null)
-    .map(g => ({ date: new Date(g.created_at), solo: null, vs: g.score }));
+  const completed = history.filter(s => s.score !== null).slice(0, 20).reverse();
+  if (!completed.length) return;
 
-  const combined = [...soloGames, ...vsGames]
-    .sort((a, b) => a.date - b.date)
-    .slice(-30);
-
-  if (!combined.length) return;
-
-  const labels = combined.map((_, i) => `#${i + 1}`);
-  const soloData = combined.map(g => g.solo);
-  const vsData = combined.map(g => g.vs);
+  const labels = completed.map((_, i) => `#${i + 1}`);
+  const data = completed.map(s => s.score);
 
   new Chart(canvas, {
     type: 'line',
     data: {
       labels,
+      datasets: [{
+        label: 'Score',
+        data,
+        borderColor: '#1A7842',
+        backgroundColor: 'rgba(26,120,66,0.08)',
+        tension: 0.4,
+        pointBackgroundColor: '#1A7842',
+        pointRadius: 4,
+        fill: true,
+      }],
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: {
+        legend: { display: false },
+        tooltip: { callbacks: { label: ctx => `${ctx.parsed.y}%` } },
+      },
+      scales: {
+        x: { grid: { color: '#E3DDD5' }, ticks: { color: '#6D6660' } },
+        y: {
+          grid: { color: '#E3DDD5' },
+          ticks: { color: '#6D6660', callback: v => v + '%' },
+          min: 0, max: 100,
+        },
+      },
+    },
+  });
+
+  renderVsChart(vsHistory);
+}
+
+function renderVsChart(vsHistory) {
+  const canvas = document.getElementById('vs-score-chart');
+  if (!canvas || !window.Chart) return;
+
+  const games = (vsHistory || []).filter(g => g.score !== null).slice(0, 20).reverse();
+  const wrap = document.getElementById('vs-chart-wrap');
+
+  if (!games.length) {
+    if (wrap) wrap.style.display = 'none';
+    return;
+  }
+  if (wrap) wrap.style.display = '';
+
+  const labels = games.map((_, i) => `#${i + 1}`);
+  const scores = games.map(g => g.score);
+  const wins = games.map(g => (String(g.winner_id) === String(getUser()?.id) ? 1 : 0));
+
+  new Chart(canvas, {
+    type: 'bar',
+    data: {
+      labels,
       datasets: [
         {
-          label: 'Solo',
-          data: soloData,
-          borderColor: '#1A7842',
-          backgroundColor: 'rgba(26,120,66,0.08)',
-          tension: 0.4,
-          pointBackgroundColor: '#1A7842',
-          pointRadius: 4,
-          spanGaps: false,
-          fill: true,
-        },
-        {
-          label: 'VS',
-          data: vsData,
+          type: 'line',
+          label: 'Score %',
+          data: scores,
           borderColor: '#C0392B',
-          backgroundColor: 'rgba(192,57,43,0.07)',
+          backgroundColor: 'rgba(192,57,43,0.08)',
           tension: 0.4,
           pointBackgroundColor: '#C0392B',
           pointRadius: 4,
-          spanGaps: false,
-          fill: false,
+          fill: true,
+          yAxisID: 'yScore',
+          order: 1,
+        },
+        {
+          type: 'bar',
+          label: 'Victoire',
+          data: wins,
+          backgroundColor: wins.map(w => w ? 'rgba(26,120,66,0.55)' : 'rgba(192,57,43,0.25)'),
+          borderRadius: 4,
+          yAxisID: 'yWin',
+          order: 2,
         },
       ],
     },
@@ -124,15 +165,25 @@ function renderChart(history, vsHistory) {
           labels: { color: '#6D6660', font: { size: 12 }, boxWidth: 12, padding: 16 },
         },
         tooltip: {
-          callbacks: { label: ctx => `${ctx.dataset.label} : ${ctx.parsed.y}%` },
+          callbacks: {
+            label: ctx => ctx.dataset.label === 'Score %'
+              ? `Score : ${ctx.parsed.y}%`
+              : ctx.parsed.y ? 'Victoire' : 'Défaite',
+          },
         },
       },
       scales: {
         x: { grid: { color: '#E3DDD5' }, ticks: { color: '#6D6660' } },
-        y: {
+        yScore: {
+          position: 'left',
           grid: { color: '#E3DDD5' },
           ticks: { color: '#6D6660', callback: v => v + '%' },
           min: 0, max: 100,
+        },
+        yWin: {
+          position: 'right',
+          display: false,
+          min: 0, max: 1,
         },
       },
     },
