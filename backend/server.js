@@ -292,6 +292,26 @@ app.get('/api/leaderboard/vs', optionalAuth, (req, res) => {
   res.json({ rows, my_rank });
 });
 
+app.get('/api/vs/history', authenticateToken, (req, res) => {
+  const userId = req.user.id;
+  const rows = db.prepare(`
+    SELECT
+      r.room_code, r.created_at, r.lang, r.total_errors,
+      r.winner_id,
+      sc.score, sc.corrections_count,
+      CASE WHEN r.player1_id = ? THEN r.player2_id ELSE r.player1_id END AS opponent_id,
+      ou.username AS opponent_name
+    FROM vs_rooms r
+    LEFT JOIN vs_scores sc ON sc.room_id = r.id AND sc.user_id = ?
+    LEFT JOIN users ou ON ou.id = (CASE WHEN r.player1_id = ? THEN r.player2_id ELSE r.player1_id END)
+    WHERE (r.player1_id = ? OR r.player2_id = ?) AND r.status = 'finished'
+    ORDER BY r.created_at DESC
+    LIMIT 30
+  `).all(userId, userId, userId, userId, userId);
+
+  res.json(rows);
+});
+
 // ── VS Mode ───────────────────────────────────────────────────────────────────
 
 function genRoomCode() {
@@ -489,7 +509,20 @@ function endGame(roomCode, disconnectedUserId = null) {
     }
   }
 
-  db.prepare('UPDATE vs_rooms SET status = ?, winner_id = ? WHERE room_code = ?').run('finished', winnerId, roomCode);
+  const totalErrors = errors_map.length;
+  db.prepare('UPDATE vs_rooms SET status = ?, winner_id = ?, total_errors = ? WHERE room_code = ?').run('finished', winnerId, totalErrors, roomCode);
+
+  const roomRow = db.prepare('SELECT id FROM vs_rooms WHERE room_code = ?').get(roomCode);
+  if (roomRow) {
+    Object.entries(playerScores).forEach(([userId, ps]) => {
+      const score = totalErrors > 0 ? Math.round((ps.valid / totalErrors) * 100) : 0;
+      db.prepare(`
+        INSERT INTO vs_scores (room_id, user_id, corrections_count, score)
+        VALUES (?, ?, ?, ?)
+        ON CONFLICT DO NOTHING
+      `).run(roomRow.id, userId, ps.applied, score);
+    });
+  }
   broadcast(roomState.players, {
     type: 'game_over',
     scores,

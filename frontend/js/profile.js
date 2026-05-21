@@ -13,15 +13,19 @@ const user = getUser();
 
 async function loadProfile() {
   try {
-    const [me, history] = await Promise.all([
+    const [me, history, vsHistory, vsLb] = await Promise.all([
       apiGet('/auth/me'),
       apiGet('/game/history'),
+      apiGet('/vs/history'),
+      apiGet('/leaderboard/vs'),
     ]);
 
     renderHeader(me);
     renderStats(history);
-    renderChart(history);
+    renderChart(history, vsHistory);
     renderHistory(history);
+    renderVsRank(vsLb);
+    renderVsHistory(vsHistory);
   } catch (e) {
     showToast(e.message, 'error');
   }
@@ -59,38 +63,68 @@ function renderStats(history) {
   document.getElementById('stat-streak').textContent = streak + ' j';
 }
 
-function renderChart(history) {
+function renderChart(history, vsHistory) {
   const canvas = document.getElementById('score-chart');
   if (!canvas || !window.Chart) return;
 
-  const completed = history.filter(s => s.score !== null).slice(0, 20).reverse();
-  if (!completed.length) return;
+  // Merge solo + VS games chronologically
+  const soloGames = history
+    .filter(s => s.score !== null)
+    .map(s => ({ date: new Date(s.completed_at), solo: s.score, vs: null }));
+  const vsGames = (vsHistory || [])
+    .filter(g => g.score !== null)
+    .map(g => ({ date: new Date(g.created_at), solo: null, vs: g.score }));
 
-  const labels = completed.map((s, i) => `#${i + 1}`);
-  const data = completed.map(s => s.score);
+  const combined = [...soloGames, ...vsGames]
+    .sort((a, b) => a.date - b.date)
+    .slice(-30);
+
+  if (!combined.length) return;
+
+  const labels = combined.map((_, i) => `#${i + 1}`);
+  const soloData = combined.map(g => g.solo);
+  const vsData = combined.map(g => g.vs);
 
   new Chart(canvas, {
     type: 'line',
     data: {
       labels,
-      datasets: [{
-        label: 'Score',
-        data,
-        borderColor: '#1A7842',
-        backgroundColor: 'rgba(26,120,66,0.08)',
-        tension: 0.4,
-        pointBackgroundColor: '#1A7842',
-        pointRadius: 4,
-        fill: true,
-      }],
+      datasets: [
+        {
+          label: 'Solo',
+          data: soloData,
+          borderColor: '#1A7842',
+          backgroundColor: 'rgba(26,120,66,0.08)',
+          tension: 0.4,
+          pointBackgroundColor: '#1A7842',
+          pointRadius: 4,
+          spanGaps: false,
+          fill: true,
+        },
+        {
+          label: 'VS',
+          data: vsData,
+          borderColor: '#C0392B',
+          backgroundColor: 'rgba(192,57,43,0.07)',
+          tension: 0.4,
+          pointBackgroundColor: '#C0392B',
+          pointRadius: 4,
+          spanGaps: false,
+          fill: false,
+        },
+      ],
     },
     options: {
       responsive: true,
       maintainAspectRatio: false,
       plugins: {
-        legend: { display: false },
+        legend: {
+          display: true,
+          position: 'top',
+          labels: { color: '#6D6660', font: { size: 12 }, boxWidth: 12, padding: 16 },
+        },
         tooltip: {
-          callbacks: { label: ctx => `${ctx.parsed.y}%` },
+          callbacks: { label: ctx => `${ctx.dataset.label} : ${ctx.parsed.y}%` },
         },
       },
       scales: {
@@ -103,6 +137,40 @@ function renderChart(history) {
       },
     },
   });
+}
+
+function renderVsRank(vsLb) {
+  const el = document.getElementById('stat-vs-rank');
+  if (!el) return;
+  el.textContent = vsLb?.my_rank ? `#${vsLb.my_rank}` : '—';
+}
+
+function renderVsHistory(vsHistory) {
+  const tbody = document.getElementById('vs-history-tbody');
+  if (!tbody) return;
+
+  if (!vsHistory || !vsHistory.length) {
+    tbody.innerHTML = '<tr><td colspan="5" style="text-align:center;color:var(--text-muted);padding:32px">Aucune partie VS jouée</td></tr>';
+    return;
+  }
+
+  const langLabel = { fr: '🇫🇷 Français', en: '🇬🇧 Anglais' };
+  const currentUser = getUser();
+
+  tbody.innerHTML = vsHistory.map(g => {
+    const won = String(g.winner_id) === String(currentUser?.id);
+    const resultHtml = `<span style="font-weight:700;color:${won ? 'var(--green)' : 'var(--red)'}">${won ? 'Victoire' : 'Défaite'}</span>`;
+    const scoreHtml = g.score !== null
+      ? `<span style="font-family:var(--font-display);font-weight:800;color:${won ? 'var(--green)' : 'var(--red)'}">${g.score}%</span>`
+      : '—';
+    return `<tr>
+      <td>${new Date(g.created_at).toLocaleDateString('fr-FR')}</td>
+      <td>${langLabel[g.lang] || '🇫🇷 Français'}</td>
+      <td style="font-weight:500">${g.opponent_name || 'Inconnu'}</td>
+      <td>${scoreHtml}</td>
+      <td>${resultHtml}</td>
+    </tr>`;
+  }).join('');
 }
 
 function renderHistory(history) {

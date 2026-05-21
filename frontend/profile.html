@@ -42,22 +42,26 @@
   </div>
 
   <!-- Stats -->
-  <div class="stats-grid">
+  <div class="stats-grid" style="grid-template-columns:repeat(auto-fit,minmax(140px,1fr))">
     <div class="stat-card">
       <div class="stat-card-value" id="stat-games">—</div>
-      <div class="stat-card-label" data-i18n="profile.stats.games">Parties jouées</div>
+      <div class="stat-card-label">Parties jouées</div>
     </div>
     <div class="stat-card">
       <div class="stat-card-value" id="stat-avg" style="color:var(--green)">—</div>
-      <div class="stat-card-label" data-i18n="profile.stats.avg">Score moyen</div>
+      <div class="stat-card-label">Score moyen</div>
     </div>
     <div class="stat-card">
-      <div class="stat-card-value" id="stat-streak" style="color:#FFA500">—</div>
-      <div class="stat-card-label" data-i18n="profile.stats.streak">Streak</div>
+      <div class="stat-card-value" id="stat-streak" style="color:var(--orange)">—</div>
+      <div class="stat-card-label">Streak</div>
     </div>
     <div class="stat-card">
       <div class="stat-card-value" id="stat-rank" style="font-size:1.5rem">—</div>
-      <div class="stat-card-label">Position au classement</div>
+      <div class="stat-card-label">Classement Solo</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-card-value" id="stat-vs-rank" style="font-size:1.5rem;color:var(--red)">—</div>
+      <div class="stat-card-label">Classement VS</div>
     </div>
   </div>
 
@@ -67,7 +71,7 @@
   </div>
 
   <!-- History -->
-  <h2 style="font-family:var(--font-display);font-size:1.3rem;margin-bottom:16px">Historique</h2>
+  <h2 style="font-family:var(--font-display);font-size:1.3rem;margin-bottom:16px">Historique Solo</h2>
   <table class="history-table">
     <thead>
       <tr>
@@ -79,6 +83,23 @@
       </tr>
     </thead>
     <tbody id="history-tbody">
+      <tr><td colspan="5" style="text-align:center;color:var(--text-muted);padding:32px">Chargement…</td></tr>
+    </tbody>
+  </table>
+
+  <!-- VS History -->
+  <h2 style="font-family:var(--font-display);font-size:1.3rem;margin-top:40px;margin-bottom:16px">Historique VS</h2>
+  <table class="history-table">
+    <thead>
+      <tr>
+        <th>Date</th>
+        <th>Langue</th>
+        <th>Adversaire</th>
+        <th>Score</th>
+        <th>Résultat</th>
+      </tr>
+    </thead>
+    <tbody id="vs-history-tbody">
       <tr><td colspan="5" style="text-align:center;color:var(--text-muted);padding:32px">Chargement…</td></tr>
     </tbody>
   </table>

@@ -74,6 +74,8 @@ db.exec(`
   "ALTER TABLE vs_rooms ADD COLUMN lang TEXT DEFAULT 'fr'",
   "ALTER TABLE sessions ADD COLUMN lang TEXT DEFAULT 'fr'",
   "ALTER TABLE vs_rooms ADD COLUMN text_size TEXT DEFAULT 'moyen'",
+  'ALTER TABLE vs_scores ADD COLUMN score REAL',
+  'ALTER TABLE vs_rooms ADD COLUMN total_errors INTEGER DEFAULT 0',
 ].forEach(sql => { try { db.exec(sql); } catch {} });
 
 // Migrate session_corrections: wrong_word → span_idx
